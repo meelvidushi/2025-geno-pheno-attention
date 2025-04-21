@@ -1,6 +1,8 @@
 # Claude Code
 CLAUDE.md
 
+inputs/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

@@ -1,1 +1,54 @@
-% Populate this with your references. See examples/demo.bib for an example.
+@article {Rijal2025,
+	author = {Rijal, Krishna and Holmes, Caroline M. and Petti, Samantha and Reddy, Gautam and Desai, Michael M. and Mehta, Pankaj},
+	title = {Inferring genotype-phenotype maps using attention models},
+	elocation-id = {2025.04.11.648465},
+	year = {2025},
+	doi = {10.1101/2025.04.11.648465},
+	publisher = {Cold Spring Harbor Laboratory},
+	abstract = {Predicting phenotype from genotype is a central challenge in genetics. Traditional approaches in quantitative genetics typically analyze this problem using methods based on linear regression. These methods generally assume that the genetic architecture of complex traits can be parameterized in terms of an additive model, where the effects of loci are independent, plus (in some cases) pair-wise epistatic interactions between loci. However, these models struggle to analyze more complex patterns of epistasis or subtle gene-environment interactions. Recent advances in machine learning, particularly attention-based models, offer a promising alternative. Initially developed for natural language processing, attention-based models excel at capturing context-dependent interactions and have shown exceptional performance in predicting protein structure and function. Here, we apply attention-based models to quantitative genetics. We analyze the performance of this attention-based approach in predicting phenotype from genotype using simulated data across a range of models with increasing epistatic complexity, and using experimental data from a recent quantitative trait locus mapping study in budding yeast. We find that our model demonstrates superior out-of-sample predictions in epistatic regimes compared to standard methods. We also explore a more general multi-environment attention-based model to jointly analyze genotype-phenotype maps across multiple environments and show that such architectures can be used for {\textquotedblleft}transfer learning{\textquotedblright} {\textendash} predicting phenotypes in novel environments with limited training data.Competing Interest StatementThe authors have declared no competing interest.},
+	URL = {https://www.biorxiv.org/content/early/2025/04/11/2025.04.11.648465},
+	eprint = {https://www.biorxiv.org/content/early/2025/04/11/2025.04.11.648465.full.pdf},
+	journal = {bioRxiv}
+}
+
+@article{Vaswani2017,
+  author       = {Ashish Vaswani and
+                  Noam Shazeer and
+                  Niki Parmar and
+                  Jakob Uszkoreit and
+                  Llion Jones and
+                  Aidan N. Gomez and
+                  Lukasz Kaiser and
+                  Illia Polosukhin},
+  title        = {Attention Is All You Need},
+  journal      = {CoRR},
+  volume       = {abs/1706.03762},
+  year         = {2017},
+  url          = {http://arxiv.org/abs/1706.03762},
+  eprinttype    = {arXiv},
+  eprint       = {1706.03762},
+  timestamp    = {Sat, 23 Jan 2021 01:20:40 +0100},
+  biburl       = {https://dblp.org/rec/journals/corr/VaswaniSPUJGKP17.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+
+@article {Ba2022,
+article_type = {journal},
+title = {Barcoded bulk QTL mapping reveals highly polygenic and epistatic architecture of complex traits in yeast},
+author = {Nguyen Ba, Alex N and Lawrence, Katherine R and Rego-Costa, Artur and Gopalakrishnan, Shreyas and Temko, Daniel and Michor, Franziska and Desai, Michael M},
+editor = {Verstrepen, Kevin J and Barkai, Naama and Verstrepen, Kevin J},
+volume = 11,
+year = 2022,
+month = {feb},
+pub_date = {2022-02-11},
+pages = {e73983},
+citation = {eLife 2022;11:e73983},
+doi = {10.7554/eLife.73983},
+url = {https://doi.org/10.7554/eLife.73983},
+abstract = {Mapping the genetic basis of complex traits is critical to uncovering the biological mechanisms that underlie disease and other phenotypes. Genome-wide association studies (GWAS) in humans and quantitative trait locus (QTL) mapping in model organisms can now explain much of the observed heritability in many traits, allowing us to predict phenotype from genotype. However, constraints on power due to statistical confounders in large GWAS and smaller sample sizes in QTL studies still limit our ability to resolve numerous small-effect variants, map them to causal genes, identify pleiotropic effects across multiple traits, and infer non-additive interactions between loci (epistasis). Here, we introduce barcoded bulk quantitative trait locus (BB-QTL) mapping, which allows us to construct, genotype, and phenotype 100,000 offspring of a budding yeast cross, two orders of magnitude larger than the previous state of the art. We use this panel to map the genetic basis of eighteen complex traits, finding that the genetic architecture of these traits involves hundreds of small-effect loci densely spaced throughout the genome, many with widespread pleiotropic effects across multiple traits. Epistasis plays a central role, with thousands of interactions that provide insight into genetic networks. By dramatically increasing sample size, BB-QTL mapping demonstrates the potential of natural variants in high-powered QTL studies to reveal the highly polygenic, pleiotropic, and epistatic architecture of complex traits.},
+keywords = {quantitative trait loci, pleiotropy, epistasis, polygenic traits},
+journal = {eLife},
+issn = {2050-084X},
+publisher = {eLife Sciences Publications, Ltd},
+}
