@@ -15,17 +15,11 @@
 # - validation
 # - visualization
 authors:
-  - name: First M. Last
+  - name: Erin
     orcid: 0000-0000-0000-0000
     roles:
-      - conceptualization
-      - formal analysis
-      - investigation
-      - methodology
-      - software
-  - name: Contributor Name
+      - TBD
+  - name: Evan
     orcid: 0000-0000-0000-0000
     roles:
-      - data curation
-      - validation
-  - name: Another Author
+      - TBD
