@@ -123,13 +123,25 @@ def create_dataloaders(
 
 
 if __name__ == "__main__":
-    dataset = GenoPhenoDataset(
+    train = GenoPhenoDataset(
         Path("./data/geno_train.npy"),
         Path("./data/pheno_train.npy"),
         "23C",
     )
 
-    dataloader = DataLoader(dataset, 16, shuffle=True)
+    val = GenoPhenoDataset(
+        Path("./data/geno_val.npy"),
+        Path("./data/pheno_val.npy"),
+        "23C",
+    )
+
+    test = GenoPhenoDataset(
+        Path("./data/geno_test.npy"),
+        Path("./data/pheno_test.npy"),
+        "23C",
+    )
+
+    dataloader = DataLoader(train, 16, shuffle=True)
 
     for batch in dataloader:
         geno, pheno = batch

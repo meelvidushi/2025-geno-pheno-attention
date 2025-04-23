@@ -1,15 +1,3 @@
-"""This module recapitulates the results in Rijal et. al. 2025.
-
-https://github.com/Emergent-Behaviors-in-Biology/GenoPhenoMapAttention/blob/main/experiment/single_env_attention_QTL_yeast_data.ipynb
-
-ThreeLayerAttention:
-    This is a copy-paste from the notebook with very minor edits required due to the
-    notebook's use of global variables used within the class.
-
-Rijal2025:
-    This is a lightning module subclass.
-"""
-
 import torch
 import torch.nn as nn
 import torch.nn.init as init
@@ -17,42 +5,41 @@ import torch.nn.init as init
 from analysis.base import GenoPhenoBase
 
 
-class ThreeLayerAttention(nn.Module):
-    def __init__(self, input_dim, query_dim, key_dim, seq_length):
+class StackedAttention(nn.Module):
+    def __init__(self, embedding_dim, seq_length, num_layers=3, skip_connections=False):
         """
-        Implements a three-layer attention mechanism.
+        Implements a multi-layer attention mechanism.
 
         Args:
-            input_dim (int): Dimension of input features.
-            query_dim (int): Dimension of the query matrix.
-            key_dim (int): Dimension of the key matrix.
+            embedding_dim (int): Dimension of input features.
+            seq_length (int): Length of the sequence.
+            num_layers (int): Number of attention layers.
+            skip_connections (bool): Whether to use skip connections between attention layers.
         """
         super().__init__()
-        self.input_dim = input_dim
-        self.query_dim = query_dim
-        self.key_dim = key_dim
+        self.embedding_dim = embedding_dim
+        self.query_dim = self.embedding_dim
+        self.key_dim = self.embedding_dim
         self.seq_length = seq_length
+        self.num_layers = num_layers
+        self.skip_connections = skip_connections
 
-        # Learnable weight matrices for the first attention layer
-        self.query_matrix_1 = nn.Parameter(torch.empty(input_dim, query_dim))
-        self.key_matrix_1 = nn.Parameter(torch.empty(input_dim, key_dim))
-        self.value_matrix_1 = nn.Parameter(torch.empty(input_dim, input_dim))
-
-        # Learnable weight matrices for the second attention layer
-        self.query_matrix_2 = nn.Parameter(torch.empty(input_dim, query_dim))
-        self.key_matrix_2 = nn.Parameter(torch.empty(input_dim, key_dim))
-        self.value_matrix_2 = nn.Parameter(torch.empty(input_dim, input_dim))
-
-        # Learnable weight matrices for the third attention layer
-        self.query_matrix_3 = nn.Parameter(torch.empty(input_dim, query_dim))
-        self.key_matrix_3 = nn.Parameter(torch.empty(input_dim, key_dim))
-        self.value_matrix_3 = nn.Parameter(torch.empty(input_dim, input_dim))
+        # Create learnable matrices for each layer
+        self.query_matrices = nn.ParameterList(
+            [nn.Parameter(torch.empty(embedding_dim, self.query_dim)) for _ in range(num_layers)]
+        )
+        self.key_matrices = nn.ParameterList(
+            [nn.Parameter(torch.empty(embedding_dim, self.key_dim)) for _ in range(num_layers)]
+        )
+        self.value_matrices = nn.ParameterList(
+            [nn.Parameter(torch.empty(embedding_dim, embedding_dim)) for _ in range(num_layers)]
+        )
 
         # Learnable random projection matrix (reduces input dimensionality)
-        self.random_matrix = nn.Parameter(torch.empty(self.seq_length, self.input_dim - 1))
+        self.random_matrix = nn.Parameter(torch.empty(self.seq_length, self.embedding_dim - 1))
 
         # Learnable coefficients for attended values
-        self.coeffs_attended = nn.Parameter(torch.empty(seq_length, input_dim))
+        self.coeffs_attended = nn.Parameter(torch.empty(seq_length, embedding_dim))
 
         # Learnable scalar offset for output adjustment
         self.offset = nn.Parameter(torch.randn(1))
@@ -63,94 +50,83 @@ class ThreeLayerAttention(nn.Module):
     def init_parameters(self):
         init_scale = 0.03  # Small scale for initialization to prevent exploding gradients
 
-        for param in [
-            self.query_matrix_1,
-            self.key_matrix_1,
-            self.value_matrix_1,
-            self.query_matrix_2,
-            self.key_matrix_2,
-            self.value_matrix_2,
-            self.query_matrix_3,
-            self.key_matrix_3,
-            self.value_matrix_3,
+        params = [
+            *self.query_matrices,
+            *self.key_matrices,
+            *self.value_matrices,
             self.random_matrix,
             self.coeffs_attended,
             self.offset,
-        ]:
+        ]
+
+        for param in params:
             init.normal_(param, std=init_scale)
 
     def forward(self, x):
         """
-        Forward pass through three layers of self-attention.
+        Forward pass through multiple layers of self-attention.
 
         Args:
-            x (Tensor): Input tensor of shape (batch_size, num_loci, input_dim)
+            x (Tensor): Input tensor of shape (batch_size, num_loci, embedding_dim)
 
         Returns:
             Tensor: Final attended output of shape (batch_size,)
         """
         # Apply a random projection and concatenate it with the last feature, which
         # consists entirely of ones
-        y = torch.cat(
+        attended_values = torch.cat(
             (torch.matmul(x[:, :, : self.seq_length], self.random_matrix), x[:, :, -1:]), dim=2
         )
 
-        # First self-attention layer
-        query_1 = torch.matmul(y, self.query_matrix_1)
-        key_1 = torch.matmul(y, self.key_matrix_1)
-        value_1 = torch.matmul(y, self.value_matrix_1)
-        scores_1 = torch.matmul(query_1, key_1.transpose(1, 2))
-        scores_1 = torch.softmax(scores_1, dim=-1)  # Softmax for attention weighting
-        attended_values_1 = torch.matmul(scores_1, value_1)
+        # Process through each attention layer
+        for i in range(self.num_layers):
+            query = torch.matmul(attended_values, self.query_matrices[i])
+            key = torch.matmul(attended_values, self.key_matrices[i])
+            value = torch.matmul(attended_values, self.value_matrices[i])
+            scores = torch.matmul(query, key.transpose(1, 2))
+            scores = torch.softmax(scores, dim=-1)  # Softmax for attention weighting
 
-        # Second self-attention layer
-        query_2 = torch.matmul(attended_values_1, self.query_matrix_2)
-        key_2 = torch.matmul(attended_values_1, self.key_matrix_2)
-        value_2 = torch.matmul(attended_values_1, self.value_matrix_2)
-        scores_2 = torch.matmul(query_2, key_2.transpose(1, 2))
-        scores_2 = torch.softmax(scores_2, dim=-1)
-        attended_values_2 = torch.matmul(scores_2, value_2)
-
-        # Third self-attention layer
-        query_3 = torch.matmul(attended_values_2, self.query_matrix_3)
-        key_3 = torch.matmul(attended_values_2, self.key_matrix_3)
-        value_3 = torch.matmul(attended_values_2, self.value_matrix_3)
-        scores_3 = torch.matmul(query_3, key_3.transpose(1, 2))
-        scores_3 = torch.softmax(scores_3, dim=-1)
-        attended_values_3 = torch.matmul(scores_3, value_3)
+            # Apply attention and add skip connection if enabled
+            attention_output = torch.matmul(scores, value)
+            if self.skip_connections and i > 0:
+                attended_values = attention_output + attended_values
+            else:
+                attended_values = attention_output
 
         # Compute final weighted sum using learned coefficients
-        attended_values_3 = torch.einsum("bij,ij->b", attended_values_3, self.coeffs_attended)
+        final_output = torch.einsum("bij,ij->b", attended_values, self.coeffs_attended)
 
         # Add offset term to adjust output scale
-        output = attended_values_3 + self.offset
+        output = final_output + self.offset
 
         return output
 
 
-class Rijal2025(GenoPhenoBase):
+class RijalEtAl(GenoPhenoBase):
     def __init__(
         self,
-        input_dim: int,
-        query_dim: int,
-        key_dim: int,
+        embedding_dim: int,
         seq_length: int,
         learning_rate: float = 0.001,
+        weight_decay: float = 0.001,
+        num_layers: int = 3,
+        skip_connections: bool = False,
     ):
         super().__init__()
         self.save_hyperparameters()
 
-        self.input_dim = input_dim
-        self.query_dim = query_dim
-        self.key_dim = key_dim
+        self.embedding_dim = embedding_dim
         self.seq_length = seq_length
         self.learning_rate = learning_rate
+        self.weight_decay = weight_decay
+        self.num_layers = num_layers
+        self.skip_connections = skip_connections
 
-        self.model = ThreeLayerAttention(
-            input_dim=input_dim,
-            query_dim=query_dim,
-            key_dim=key_dim,
+        self.model = StackedAttention(
+            embedding_dim=embedding_dim,
             seq_length=seq_length,
+            num_layers=num_layers,
+            skip_connections=skip_connections,
         )
 
         self.loss_fn = nn.MSELoss()
