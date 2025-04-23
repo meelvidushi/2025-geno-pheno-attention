@@ -69,10 +69,9 @@ class GenoPhenoBase(L.LightningModule, ABC):
 
     def configure_optimizers(self):
         """Configure the optimizer for training."""
-        optimizer = torch.optim.AdamW(
+        optimizer = torch.optim.Adam(
             self.parameters(),
-            lr=self.learning_rate,
-            weight_decay=self.weight_decay,
+            lr=self.learning_rate
         )
 
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(

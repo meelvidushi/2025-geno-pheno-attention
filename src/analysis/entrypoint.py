@@ -8,7 +8,7 @@ if __name__ == "__main__":
     config = tyro.cli(RunParams)
 
     if config.use_modal:
-        with modal.enable_output(), app.run(detach=True):
+        with modal.enable_output(), app.run(detach=config.modal_detach):
             train_model_with_modal(config)
     else:
         train_model(config)

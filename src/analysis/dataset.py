@@ -60,7 +60,7 @@ def create_dataloaders(
     batch_size: int,
     num_workers: int = 4,
     pin_memory: bool = True,
-) -> dict[str, DataLoader]:
+) -> tuple[DataLoader, DataLoader, DataLoader]:
     """Create train, validation, and test dataloaders
 
     Args:
@@ -71,7 +71,7 @@ def create_dataloaders(
         pin_memory: Whether to pin memory in dataloaders
 
     Returns:
-        Dictionary containing train, val, and test dataloaders
+        Tuple containing train, val, and test dataloaders
     """
     train_dataset = GenoPhenoDataset(
         data_dir / "geno_train.npy",
@@ -97,6 +97,7 @@ def create_dataloaders(
         shuffle=True,
         num_workers=num_workers,
         pin_memory=pin_memory,
+        persistent_workers=True,
     )
 
     val_loader = DataLoader(
@@ -105,6 +106,7 @@ def create_dataloaders(
         shuffle=False,
         num_workers=num_workers,
         pin_memory=pin_memory,
+        persistent_workers=True,
     )
 
     test_loader = DataLoader(
@@ -113,13 +115,10 @@ def create_dataloaders(
         shuffle=False,
         num_workers=num_workers,
         pin_memory=pin_memory,
+        persistent_workers=False,
     )
 
-    return {
-        "train": train_loader,
-        "val": val_loader,
-        "test": test_loader,
-    }
+    return train_loader, val_loader, test_loader
 
 
 if __name__ == "__main__":
