@@ -1,3 +1,4 @@
+import math
 from pathlib import Path
 
 import attrs
@@ -37,18 +38,15 @@ class RijalEtAlConfig:
     modal_detach: bool = True
 
 
-
-
 ############################################################
 # Refactored StackedAttention
 ############################################################
 class StackedAttention(nn.Module):
-    """A more canonical multi‑layer self‑attention block.
+    """A more canonical multi-layer self-attention block.
 
     *   Each locus has a learnable *embedding* vector.
     *   Q/K/V projections are `nn.Linear` layers (with bias).
     *   Skip‑connections are optional.
-    *   No extra scaling / LayerNorm / dropout is introduced on purpose.
     """
 
     def __init__(
@@ -64,13 +62,8 @@ class StackedAttention(nn.Module):
         self.num_layers = num_layers
         self.skip_connections = skip_connections
 
-        # --- 1.  Locus‑level embeddings ------------------------------------
-        #     "random_matrix" in the original code was effectively a per‑locus
-        #     trainable vector multiplied by the genotype value.  Replace it
-        #     with a standard embedding table.
         self.locus_embeddings = nn.Parameter(torch.empty(seq_length, embedding_dim))  # (L, D)
 
-        # --- 2.  Q/K/V projections per layer --------------------------------
         self.q_linears = nn.ModuleList(
             [nn.Linear(embedding_dim, embedding_dim, bias=True) for _ in range(num_layers)]
         )
@@ -81,14 +74,11 @@ class StackedAttention(nn.Module):
             [nn.Linear(embedding_dim, embedding_dim, bias=True) for _ in range(num_layers)]
         )
 
-        # --- 3.  Output aggregation ----------------------------------------
-        # Learnable per‑locus, per‑feature coefficients → scalar phenotype.
         self.coeffs_attended = nn.Parameter(torch.empty(seq_length, embedding_dim))  # (L, D)
         self.offset = nn.Parameter(torch.zeros(1))
 
         self._reset_parameters()
 
-    # ---------------------------------------------------------------------
     def _reset_parameters(self):
         nn.init.xavier_uniform_(self.locus_embeddings)
         nn.init.xavier_uniform_(self.coeffs_attended)
@@ -102,7 +92,6 @@ class StackedAttention(nn.Module):
                 nn.init.zeros_(v.bias)
         nn.init.zeros_(self.offset)
 
-    # ---------------------------------------------------------------------
     def forward(self, genotypes: torch.Tensor) -> torch.Tensor:
         """Forward pass.
 
@@ -114,31 +103,27 @@ class StackedAttention(nn.Module):
         # (B, L, D) = (B, L, 1) * (L, D)
         x = genotypes.unsqueeze(-1) * self.locus_embeddings  # broadcasting mult
 
-        # ----------------------------------------------- attention stack ----
         for i in range(self.num_layers):
             q = self.q_linears[i](x)  # (B, L, D)
             k = self.k_linears[i](x)  # (B, L, D)
             v = self.v_linears[i](x)  # (B, L, D)
 
-            # attention weights: (B, L, L)
-            scores = torch.matmul(q, k.transpose(1, 2))  # no 1/√d scaling per spec
-            attn = F.softmax(scores, dim=-1)
-            x_next = torch.matmul(attn, v)  # (B, L, D)
+            #scores = torch.matmul(q, k.transpose(1, 2))  # no 1/√d scaling per spec
+            #attn = F.softmax(scores, dim=-1)
+            #x_next = torch.matmul(attn, v)  # (B, L, D)
+
+            x_next = F.scaled_dot_product_attention(q, k, v, scale=1/math.sqrt(self.embedding_dim))
 
             if self.skip_connections and i > 0:
                 x = x + x_next
             else:
                 x = x_next
 
-        # -------------------------------------- aggregate loci to scalar ----
-        # (B,) ← einsum_{bij,ij -> b}
         phenotype = torch.einsum("bij,ij->b", x, self.coeffs_attended) + self.offset
+
         return phenotype
 
 
-############################################################
-# Refactored LightningModule
-############################################################
 class RijalEtAl(L.LightningModule):
     """Lightning wrapper around *StackedAttention* with canonical utilities."""
 
@@ -166,17 +151,14 @@ class RijalEtAl(L.LightningModule):
         self.val_r2 = torchmetrics.R2Score()
         self.test_r2 = torchmetrics.R2Score()
 
-    # ------------------------------------------------------------------ utils
     @staticmethod
     def _strip_nan(genotypes: torch.Tensor, phenotypes: torch.Tensor):
         mask = ~torch.isnan(phenotypes)
         return genotypes[mask], phenotypes[mask]
 
-    # ---------------------------------------------------------------- forward
     def forward(self, genotypes: torch.Tensor):  # (B, L)
         return self.model(genotypes)
 
-    # ---------------------------------------------------- common step logic --
     def _step(self, batch, phase: str):
         genotypes, phenotypes = batch  # shapes: (B, L), (B,)
         genotypes, phenotypes = self._strip_nan(genotypes, phenotypes)
@@ -193,7 +175,6 @@ class RijalEtAl(L.LightningModule):
             self.test_r2.update(preds, phenotypes)
         return loss
 
-    # ------------------------------------------------ lightning hooks --------
     def training_step(self, batch, _):
         return self._step(batch, "train")
 
@@ -211,7 +192,6 @@ class RijalEtAl(L.LightningModule):
         self.log("test_r2", self.test_r2.compute())
         self.test_r2.reset()
 
-    # ------------------------------------------------ optimizer -------------
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.learning_rate)
 
@@ -287,6 +267,8 @@ def train_single_phenotype(config: RijalEtAlConfig, phenotype: str):
         skip_connections=config.skip_connections,
     )
 
+    model = torch.compile(model, mode="reduce-overhead")
+
     early_stopping = EarlyStopping(
         monitor="val_loss",
         patience=config.patience,
@@ -307,6 +289,7 @@ def train_single_phenotype(config: RijalEtAlConfig, phenotype: str):
     experiment_dir = config.save_dir / f"{config.name_prefix}_{config.phenotype}"
 
     trainer = L.Trainer(
+        precision="bf16-mixed",
         max_epochs=config.max_epochs,
         default_root_dir=experiment_dir,
         enable_checkpointing=True,
