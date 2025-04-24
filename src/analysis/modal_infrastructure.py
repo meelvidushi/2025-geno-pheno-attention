@@ -4,6 +4,7 @@ from pathlib import Path
 
 import attrs
 import modal
+import torch
 
 from analysis.base import ModelConfig, TrainConfig
 from analysis.dataset import (
@@ -16,31 +17,37 @@ from analysis.dataset import (
 )
 
 MOUNT = Path("/data")
-GPU_NAME = os.environ.get("MODAL_GPU_NAME", "A10G")
+GPU_NAME = os.environ.get("MODAL_GPU_NAME", "A10G").upper()
 MEMORY = int(os.environ.get("MODAL_RAM", 4092))
 GPU_SPEC = f"{GPU_NAME}:1"
 
 app = modal.App("geno-pheno-attention-training")
 
-image = modal.Image.debian_slim(python_version="3.12").pip_install(
-    "plotly==6.0.1",
-    "arcadia-pycolor==0.6.0",
-    "matplotlib==3.9.2",
-    "pandas==2.2.3",
-    "numpy==1.26.4",
-    "torch==2.2.2",
-    "h5py==3.13.0",
-    "scikit-learn==1.6.1",
-    "typer==0.15.2",
-    "lightning==2.5.1",
-    "tensorboard==2.19.0",
-    "tyro==0.9.19",
-    "pyyaml==6.0.1",
-    "attrs==25.3.0",
+image = (
+    modal.Image.debian_slim(python_version="3.12")
+    .pip_install(
+        "plotly==6.0.1",
+        "arcadia-pycolor==0.6.0",
+        "matplotlib==3.9.2",
+        "pandas==2.2.3",
+        "numpy==1.26.4",
+        "torch==2.2.2",
+        "h5py==3.13.0",
+        "scikit-learn==1.6.1",
+        "typer==0.15.2",
+        "lightning==2.5.1",
+        "tensorboard==2.19.0",
+        "tyro==0.9.19",
+        "pyyaml==6.0.1",
+        "attrs==25.3.0",
+    )
+    .add_local_python_source(
+        "analysis",
+    )
 )
 
 with image.imports():
-    from analysis.train import train_model
+    from analysis.train_ops import train_model
 
 
 volume = modal.Volume.from_name("geno-pheno-attention-data", create_if_missing=True)
@@ -150,6 +157,11 @@ def _download_model(run_log_dir: Path):
     cpu=1,
 )
 def _train_model(model_config: ModelConfig, train_config: TrainConfig):
+    # Add other Tensor core compatible GPUs here.
+    if GPU_NAME in {"A10G"}:
+        # Set matmul precision to medium for better performance with Tensor Cores
+        torch.set_float32_matmul_precision("medium")
+
     run_log_dir = train_model(model_config, train_config)
 
     volume.commit()

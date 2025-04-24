@@ -13,47 +13,34 @@ from torch.nn.utils import clip_grad_norm_
 class TrainConfig:
     # The data directory containing the train/validation/test datasets
     data_dir: Path = Path("./data")
-
     # The root directory where models are saved
     save_dir: Path = Path("./models")
-
     # This name of the subdirectory for the trained model. If left empty, a timestamp
     # will be used.
     name_prefix: str = ""
-
     # Which phenotype should trained?
     phenotype: str = "23C"
-
     # The optimizer. Choose between adam and adamw
     optimizer: str = "adam"
-
     # If the validation R^2 doesn't improve in this many epochs, end training early.
     patience: int = 200
-
     # The batch size.
     batch_size: int = 64
-
     # The learning rate.
     learning_rate: float = 0.001
-
     # If True, the learning rate is halved if no improvement in the validation loss is
     # seen in 5 epochs.
     lr_schedule: bool = False
-
+    # Weight decay.
     weight_decay: float = 0.0
-
     # The number of training epochs without early stopping (see `patience`).
     max_epochs: int = 200
-
     # The number of workers used for the dataloaders.
     num_workers: int = 1
-
     # Clip the gradient norm. If 0.0, no gradient clipping is applied.
     gradient_clip_val: float = 0.0
-
     # To use or not use Modal (remote GPU execution) - https://modal.com/
     use_modal: bool = False
-
     # Whether you can detach locally without killing the remote Modal job.
     modal_detach: bool = True
 
