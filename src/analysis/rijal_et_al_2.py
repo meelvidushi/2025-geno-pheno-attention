@@ -25,6 +25,7 @@ class RijalEtAlConfig:
     embedding_dim: int = 13
     num_layers: int = 3
     skip_connections: bool = False
+    dropout_prob: float = 0.2
 
     # Training parameters
     patience: int = 20
@@ -55,6 +56,7 @@ class StackedAttention(nn.Module):
         seq_length: int,
         num_layers: int = 3,
         skip_connections: bool = False,
+        dropout_prob: float = 0.1,
     ):
         super().__init__()
         self.embedding_dim = embedding_dim
@@ -73,6 +75,8 @@ class StackedAttention(nn.Module):
         self.v_linears = nn.ModuleList(
             [nn.Linear(embedding_dim, embedding_dim, bias=True) for _ in range(num_layers)]
         )
+
+        self.dropout = nn.Dropout(dropout_prob)
 
         self.coeffs_attended = nn.Parameter(torch.empty(seq_length, embedding_dim))  # (L, D)
         self.offset = nn.Parameter(torch.zeros(1))
@@ -112,12 +116,13 @@ class StackedAttention(nn.Module):
             #attn = F.softmax(scores, dim=-1)
             #x_next = torch.matmul(attn, v)  # (B, L, D)
 
-            x_next = F.scaled_dot_product_attention(q, k, v, scale=1/math.sqrt(self.embedding_dim))
+            attn_out = F.scaled_dot_product_attention(q, k, v, scale=1/math.sqrt(self.embedding_dim))
+            attn_out = self.dropout(attn_out)  # dropout on attention output
 
             if self.skip_connections and i > 0:
-                x = x + x_next
+                x = x + attn_out
             else:
-                x = x_next
+                x = attn_out
 
         phenotype = torch.einsum("bij,ij->b", x, self.coeffs_attended) + self.offset
 
@@ -133,6 +138,7 @@ class RijalEtAl(L.LightningModule):
         seq_length: int,
         num_layers: int = 3,
         skip_connections: bool = False,
+        dropout_prob: float = 0.1,
         learning_rate: float = 1e-3,
     ):
         super().__init__()
@@ -145,6 +151,7 @@ class RijalEtAl(L.LightningModule):
             seq_length=seq_length,
             num_layers=num_layers,
             skip_connections=skip_connections,
+            dropout_prob=dropout_prob,
         )
 
         self.loss_fn = nn.MSELoss()
