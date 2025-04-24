@@ -267,8 +267,6 @@ def train_single_phenotype(config: RijalEtAlConfig, phenotype: str):
         skip_connections=config.skip_connections,
     )
 
-    #model = torch.compile(model, mode="reduce-overhead")
-
     early_stopping = EarlyStopping(
         monitor="val_loss",
         patience=config.patience,
@@ -289,7 +287,6 @@ def train_single_phenotype(config: RijalEtAlConfig, phenotype: str):
     experiment_dir = config.save_dir / f"{config.name_prefix}_{config.phenotype}"
 
     trainer = L.Trainer(
-        precision="bf16-mixed",
         max_epochs=config.max_epochs,
         default_root_dir=experiment_dir,
         enable_checkpointing=True,
