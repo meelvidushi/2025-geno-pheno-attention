@@ -6,9 +6,9 @@ import pandas as pd
 import torch
 import torch.nn as nn
 import torch.nn.init as init
+import torchmetrics
 from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
 from torch.utils.data.dataloader import DataLoader
-import torchmetrics
 
 from analysis.dataset import create_dataloaders
 
