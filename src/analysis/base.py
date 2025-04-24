@@ -2,99 +2,76 @@ from abc import ABC, abstractmethod
 
 import lightning as L
 import torch
+import torch.nn as nn
+import torchmetrics
 from torch.nn.utils import clip_grad_norm_
 
+from analysis.train_ops import TrainConfig
 
-class GenoPhenoBase(L.LightningModule, ABC):
+
+class BaseModel(L.LightningModule, ABC):
+    """A base model class.
+
+    Subclasses must:
+        * Define a forward pass that takes a genotypes Tensor (B, L) as input.
+        * Call super().__init__(train_config)
+    """
+    def __init__(self, train_config: TrainConfig):
+        super().__init__()
+        self.save_hyperparameters()
+
+        self.train_config = train_config
+
+        self.loss_fn = nn.MSELoss()
+        self.val_r2 = torchmetrics.R2Score()
+        self.test_r2 = torchmetrics.R2Score()
+
     @abstractmethod
-    def _prepare_batch(self, batch) -> torch.Tensor:
+    def forward(self, genotypes: torch.Tensor):
         pass
 
-    def _process_batch(self, batch, phase):
-        genotypes, phenotypes = batch
+    @staticmethod
+    def _strip_nan(genotypes: torch.Tensor, phenotypes: torch.Tensor):
+        mask = ~torch.isnan(phenotypes)
+        return genotypes[mask], phenotypes[mask]
 
-        # Remove NaN values if any
-        nan_mask = torch.isnan(phenotypes)
-        if nan_mask.any():
-            valid_indices = ~nan_mask
-            genotypes = genotypes[valid_indices]
-            phenotypes = phenotypes[valid_indices]
+    def _step(self, batch, phase: str):
+        genotypes, phenotypes = batch  # shapes: (B, L), (B,)
+        genotypes, phenotypes = self._strip_nan(genotypes, phenotypes)
+        if genotypes.numel() == 0:
+            return None  # all‑NaN batch—skip
 
-            # Skip this batch if all values are NaN
-            if genotypes.size(0) == 0:
-                return None
+        preds = self(genotypes)
+        loss = self.loss_fn(preds, phenotypes)
+        self.log(f"{phase}_loss", loss, prog_bar=True, on_step=(phase == "train"))
 
-        inputs = self._prepare_batch((genotypes, phenotypes))
+        if phase == "val":
+            self.val_r2.update(preds, phenotypes)
+        elif phase == "test":
+            self.test_r2.update(preds, phenotypes)
 
-        # Use torch.no_grad for validation and test phases
-        if phase != "train":
-            with torch.no_grad():
-                outputs = self.forward(inputs)
-        else:
-            outputs = self.forward(inputs)
+        return loss
 
-        loss = self.loss_fn(outputs, phenotypes)
+    def training_step(self, batch, _):
+        return self._step(batch, "train")
 
-        # Calculate and log metrics
-        self.log(f"{phase}_loss", loss, prog_bar=True)
+    def validation_step(self, batch, _):
+        self._step(batch, "val")
 
-        result = {"loss": loss}
+    def test_step(self, batch, _):
+        self._step(batch, "test")
 
-        # Calculate R2 for validation and test
-        if phase != "train":
-            phenotypes_mean = torch.mean(phenotypes)
-            ss_tot = torch.sum((phenotypes - phenotypes_mean) ** 2)
-            ss_res = torch.sum((phenotypes - outputs) ** 2)
-            r2 = 1 - (ss_res / ss_tot)
+    def on_validation_epoch_end(self):
+        self.log("val_r2", self.val_r2.compute(), prog_bar=True)
+        self.val_r2.reset()
 
-            self.log(f"{phase}_r2", r2, prog_bar=(phase != "test"))
-            result[f"{phase}_r2"] = r2
-
-        return result
-
-    def forward(self, x):
-        return self.model(x)
-
-    def training_step(self, batch, batch_idx):
-        result = self._process_batch(batch, "train")
-        if result is None:
-            return None
-        return result["loss"]
-
-    def validation_step(self, batch, batch_idx):
-        return self._process_batch(batch, "val")
-
-    def test_step(self, batch, batch_idx):
-        return self._process_batch(batch, "test")
-
-    def configure_optimizers(self):
-        """Configure the optimizer for training."""
-        optimizer = torch.optim.Adam(
-            self.parameters(),
-            lr=self.learning_rate
-        )
-
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer=optimizer,
-            mode="min",
-            factor=0.5,
-            patience=3,
-            min_lr=1e-7,
-        )
-
-        # This dictionary structure tells Lightning how to manage the optimizer and scheduler.
-        return {
-            "optimizer": optimizer,
-            "lr_scheduler": {
-                "scheduler": scheduler,
-                "monitor": "val_loss",
-                "interval": "epoch",
-                "strict": True,
-            },
-        }
+    def on_test_epoch_end(self):
+        self.log("test_r2", self.test_r2.compute())
+        self.test_r2.reset()
 
     def on_before_optimizer_step(self, optimizer):
         params = [p for p in self.parameters() if p.grad is not None]
+
         # Calculate the norm using the utility function. We set max_norm=inf to only
         # calculate, not clip here. Lightning's Trainer will handle the actual clipping
         # later if configured.
@@ -108,3 +85,39 @@ class GenoPhenoBase(L.LightningModule, ABC):
             prog_bar=True,
             logger=True,
         )
+
+    def configure_optimizers(self):
+        if self.train_config.optimizer == "adamw":
+            optimizer = torch.optim.AdamW(
+                self.parameters(),
+                lr=self.train_config.learning_rate,
+                weight_decay=self.train_config.weight_decay,
+            )
+        elif self.train_config.optimizer == "adam":
+            optimizer = torch.optim.AdamW(
+                self.parameters(),
+                lr=self.train_config.learning_rate,
+            )
+        else:
+            raise NotImplementedError()
+
+        if not self.train_config.lr_schedule:
+            return optimizer
+
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer=optimizer,
+            mode="min",
+            factor=0.5,
+            patience=5,
+            min_lr=1e-7,
+        )
+
+        return {
+            "optimizer": optimizer,
+            "lr_scheduler": {
+                "scheduler": scheduler,
+                "monitor": "val_loss",
+                "interval": "epoch",
+                "strict": True,
+            },
+        }
