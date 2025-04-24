@@ -16,12 +16,24 @@ from analysis.dataset import (
     PHENO_VAL_PATHNAME,
 )
 
+APP_NAME = "geno-pheno-attention-training"
+
+# These are deployed functions of the app.
+PREP_REMOTE_DIR_FUNCTION = modal.Function.from_name(
+    APP_NAME,
+    "prepare_remote_dirs_and_check_files",
+)
+TRAIN_FUNCTION = modal.Function.from_name(
+    APP_NAME,
+    "run_training",
+)
+
 MOUNT = Path("/data")
 GPU_NAME = os.environ.get("MODAL_GPU_NAME", "A10G").upper()
 MEMORY = int(os.environ.get("MODAL_RAM", 4092))
 GPU_SPEC = f"{GPU_NAME}:1"
 
-app = modal.App("geno-pheno-attention-training")
+app = modal.App(APP_NAME)
 
 image = (
     modal.Image.debian_slim(python_version="3.12")
@@ -79,7 +91,39 @@ def prepare_remote_dirs_and_check_files(dirs_to_create: list[Path]):
     return existing_files
 
 
-def _setup_remote_directory(config: TrainConfig):
+@app.function(
+    image=image,
+    gpu=GPU_SPEC,
+    timeout=3600 * 24,  # Max timeout is 1 day
+    volumes={str(MOUNT): volume},
+    memory=MEMORY,
+    cpu=1,
+)
+def run_training(model_config: ModelConfig, train_config: TrainConfig):
+    # Add other Tensor core compatible GPUs here.
+    if GPU_NAME in {"A10G"}:
+        # Set matmul precision to medium for better performance with Tensor Cores
+        torch.set_float32_matmul_precision("medium")
+
+    run_log_dir = train_model(model_config, train_config)
+
+    volume.commit()
+
+    return run_log_dir
+
+
+@app.function(
+    image=image,
+    volumes={str(MOUNT): volume},
+    memory=1024,
+)
+@modal.web_server(6006)
+def tensorboard_server(logdir: str = "./"):
+    full_logdir = str(MOUNT / logdir)
+    subprocess.Popen(f"tensorboard --logdir={full_logdir} --bind_all --port 6006", shell=True)
+
+
+def setup_remote_directory(config: TrainConfig):
     local_paths: list[Path] = [
         config.data_dir / name
         for name in [
@@ -99,7 +143,7 @@ def _setup_remote_directory(config: TrainConfig):
     dirs_to_create = set()
     dirs_to_create.add(MOUNT / config.save_dir)
 
-    existing_files = prepare_remote_dirs_and_check_files.remote(list(dirs_to_create))
+    existing_files = PREP_REMOTE_DIR_FUNCTION.remote(list(dirs_to_create))
 
     files_to_upload: dict[Path, Path] = {}
     for local_path in local_paths:
@@ -120,7 +164,7 @@ def _setup_remote_directory(config: TrainConfig):
     print("Files uploaded successfully")
 
 
-def _download_model(run_log_dir: Path):
+def download_model(run_log_dir: Path):
     print(f"Training completed. Run artifacts saved in Modal volume at: {run_log_dir}")
 
     # Maintain the same directory structure locally as on the remote
@@ -148,38 +192,23 @@ def _download_model(run_log_dir: Path):
     print(f"Model artifacts downloaded successfully to {local_full_path}")
 
 
-@app.function(
-    image=image,
-    gpu=GPU_SPEC,
-    timeout=3600 * 24,  # Max timeout is 1 day
-    volumes={str(MOUNT): volume},
-    memory=MEMORY,
-    cpu=1,
-)
-def _train_model(model_config: ModelConfig, train_config: TrainConfig):
-    # Add other Tensor core compatible GPUs here.
-    if GPU_NAME in {"A10G"}:
-        # Set matmul precision to medium for better performance with Tensor Cores
-        torch.set_float32_matmul_precision("medium")
-
-    run_log_dir = train_model(model_config, train_config)
-
-    volume.commit()
-
-    return run_log_dir
-
-
 def train_model_with_modal(model_config: ModelConfig, train_config: TrainConfig):
-    _setup_remote_directory(train_config)
+    print("Starting training job...")
+    print(f"{model_config=}")
+    print(f"{train_config=}")
+
+    setup_remote_directory(train_config)
 
     remote_train_config = attrs.evolve(
         train_config,
         data_dir=MOUNT / train_config.data_dir,
         save_dir=MOUNT / train_config.save_dir,
     )
-    run_log_dir = _train_model.remote(model_config, remote_train_config)
+    run_log_dir = TRAIN_FUNCTION.remote(model_config, remote_train_config)
 
-    _download_model(run_log_dir)
+    print("Finished training.")
+
+    download_model(run_log_dir)
 
 
 if __name__ == "__main__":
