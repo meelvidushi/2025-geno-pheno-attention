@@ -1,12 +1,52 @@
 from abc import ABC, abstractmethod
+from pathlib import Path
 
+import attrs
 import lightning as L
 import torch
 import torch.nn as nn
 import torchmetrics
 from torch.nn.utils import clip_grad_norm_
 
-from analysis.train_ops import TrainConfig
+
+@attrs.define
+class TrainConfig:
+    # Data
+    data_dir: Path = Path("./data")
+    save_dir: Path = Path("./models")
+    name_prefix: str = ""
+    phenotype: str = "23C"
+
+    # Params
+    optimizer: str = "adam"
+    patience: int = 200
+    batch_size: int = 64
+    learning_rate: float = 0.001
+    lr_schedule: bool = False
+    weight_decay: float = 0.0
+    max_epochs: int = 200
+    num_workers: int = 1
+    gradient_clip_val: float = 0.0
+
+    # Modal (remote GPU execution) - https://modal.com/
+    use_modal: bool = False
+    modal_detach: bool = True
+
+
+@attrs.define
+class ModelConfig:
+    model_type: str = "rijal_et_al"
+
+    # These are the only parameters used by Rijal
+    seq_length: int = 1164
+    embedding_dim: int = 13
+    num_layers: int = 3
+
+    # Modifications
+    skip_connections: bool = False
+    dim_feedforward: int = 1024
+    nhead: int = 4
+    dropout_rate: float = 0.1
 
 
 class BaseModel(L.LightningModule, ABC):
@@ -16,6 +56,7 @@ class BaseModel(L.LightningModule, ABC):
         * Define a forward pass that takes a genotypes Tensor (B, L) as input.
         * Call super().__init__(train_config)
     """
+
     def __init__(self, train_config: TrainConfig):
         super().__init__()
         self.save_hyperparameters()

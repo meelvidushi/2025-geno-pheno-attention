@@ -1,58 +1,15 @@
 from datetime import datetime
 from pathlib import Path
 
-import attrs
 import lightning as L
 import pandas as pd
-import typer
 from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
 from torch.utils.data import DataLoader
 
+from analysis.base import ModelConfig, TrainConfig
 from analysis.dataset import create_dataloaders
 from analysis.piecewise_transformer import PiecewiseTransformer
 from analysis.rijal_et_al import RijalEtAl
-
-app = typer.Typer(pretty_exceptions_enable=False)
-
-
-@attrs.define
-class TrainConfig:
-    # Data
-    data_dir: Path = Path("./data")
-    save_dir: Path = Path("./models")
-    name_prefix: str = ""
-    phenotype: str = "23C"
-
-    # Params
-    optimizer: str = "adam"
-    patience: int = 200
-    batch_size: int = 64
-    learning_rate: float = 0.001
-    lr_schedule: bool = False
-    weight_decay: float = 0.0
-    max_epochs: int = 200
-    num_workers: int = 1
-    gradient_clip_val: float = 0.0
-
-    # Modal (remote GPU execution) - https://modal.com/
-    use_modal: bool = False
-    modal_detach: bool = True
-
-
-@attrs.define
-class ModelConfig:
-    model_type: str = "rijal_et_al"
-
-    # These are the only parameters used by Rijal
-    seq_length: int = 1164
-    embedding_dim: int = 13
-    num_layers: int = 3
-
-    # Modifications
-    skip_connections: bool = False
-    dim_feedforward: int = 1024
-    nhead: int = 4
-    dropout_rate: float = 0.1
 
 
 def train_model(model_config: ModelConfig, train_config: TrainConfig):
