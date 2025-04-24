@@ -1,8 +1,42 @@
+from pathlib import Path
+
+import attrs
 import lightning as L
+import pandas as pd
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchmetrics
+from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
+from torch.utils.data.dataloader import DataLoader
+
+from analysis.dataset import create_dataloaders
+
+
+@attrs.define
+class RijalEtAlConfig:
+    data_dir: Path = Path("./data")
+    save_dir: Path = Path("./models")
+    name_prefix: str = ""
+
+    # Model parameters
+    phenotype: str = "23C"
+    embedding_dim: int = 13
+    num_layers: int = 3
+    skip_connections: bool = False
+
+    # Training parameters
+    patience: int = 20
+    batch_size: int = 64
+    learning_rate: float = 0.001
+    max_epochs: int = 200
+    num_workers: int = 4
+
+    # Modal parameters
+    use_modal: bool = False
+    modal_detach: bool = True
+
+
 
 
 ############################################################
@@ -180,3 +214,109 @@ class RijalEtAl(L.LightningModule):
     # ------------------------------------------------ optimizer -------------
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+
+
+def save_metrics(
+    trainer: L.Trainer,
+    model: L.LightningModule,
+    val_dataloader: DataLoader,
+    test_dataloader: DataLoader,
+    checkpoint_callback: ModelCheckpoint,
+):
+    """Save model metrics to a CSV file."""
+    # First, get metrics for the final model state
+    final_val_results = trainer.validate(model, val_dataloader)[0]
+    final_val_loss = final_val_results["val_loss"]
+    final_val_r2 = final_val_results["val_r2"]
+
+    # Load the best model from checkpoint using the same model class
+    best_model_path = checkpoint_callback.best_model_path
+    model_class = model.__class__
+    best_model = model_class.load_from_checkpoint(best_model_path)
+    best_model.eval()
+
+    best_val_results = trainer.validate(best_model, val_dataloader)[0]
+    best_val_loss = best_val_results["val_loss"]
+    best_val_r2 = best_val_results["val_r2"]
+
+    test_results = trainer.test(best_model, dataloaders=test_dataloader)[0]
+    test_loss = test_results["test_loss"]
+    test_r2 = test_results["test_r2"]
+
+    metrics_dict = {
+        "best_val_loss": best_val_loss,
+        "final_val_loss": final_val_loss,
+        "best_val_r2": best_val_r2,
+        "final_val_r2": final_val_r2,
+        "test_loss": test_loss,
+        "test_r2": test_r2,
+        "checkpoint_path": best_model_path,
+    }
+    metrics_df = pd.DataFrame(metrics_dict.items(), columns=pd.Index(["metric", "value"]))
+
+    assert trainer.log_dir is not None
+    metrics_path = Path(trainer.log_dir) / "metrics.csv"
+    metrics_df.to_csv(metrics_path, index=False)
+
+    return metrics_path
+
+
+def train_single_phenotype(config: RijalEtAlConfig, phenotype: str):
+    # Add the phenotype to the config.
+    config = attrs.evolve(config, phenotype=phenotype)
+
+    config.save_dir.mkdir(parents=True, exist_ok=True)
+
+    L.seed_everything(42)
+
+    train_dataloader, val_dataloader, test_dataloader = create_dataloaders(
+        data_dir=config.data_dir,
+        phenotype_name=config.phenotype,
+        batch_size=config.batch_size,
+        num_workers=config.num_workers,
+    )
+
+    # This is the number of loci--we need it to initialize the model.
+    seq_length = next(iter(train_dataloader))[0].size(1)
+
+    model = RijalEtAl(
+        embedding_dim=config.embedding_dim,
+        seq_length=seq_length,
+        learning_rate=config.learning_rate,
+        num_layers=config.num_layers,
+        skip_connections=config.skip_connections,
+    )
+
+    early_stopping = EarlyStopping(
+        monitor="val_loss",
+        patience=config.patience,
+        verbose=True,
+        mode="min",
+    )
+
+    # Track and store the best model.
+    checkpoint_callback = ModelCheckpoint(
+        save_top_k=1,
+        monitor="val_r2",
+        mode="max",
+        filename="best-{epoch:02d}-{val_r2:.4f}",
+        verbose=True,
+    )
+
+    # Create a versioned subdirectory with name prefix + the phenotype.
+    experiment_dir = config.save_dir / f"{config.name_prefix}_{config.phenotype}"
+
+    trainer = L.Trainer(
+        max_epochs=config.max_epochs,
+        default_root_dir=experiment_dir,
+        enable_checkpointing=True,
+        log_every_n_steps=10,
+        callbacks=[early_stopping, checkpoint_callback],
+    )
+
+    trainer.fit(model, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader)
+
+    # Save metrics to CSV using the best checkpoint
+    save_metrics(trainer, model, val_dataloader, test_dataloader, checkpoint_callback)
+
+    return model, trainer.log_dir
