@@ -2,8 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.init as init
 
-from analysis.base import BaseModel
-from analysis.train_ops import ModelConfig, TrainConfig
+from analysis.base import BaseModel, ModelConfig, TrainConfig
 
 
 class _RijalEtAl(nn.Module):
@@ -61,13 +60,16 @@ class _RijalEtAl(nn.Module):
         for param in params:
             init.normal_(param, std=init_scale)
 
-    def forward(self, x):
+    def forward(self, one_hot_input: torch.Tensor):
         # Apply a random projection and concatenate it with the last feature, which
         # consists entirely of ones
         attended_values = torch.cat(
             (
-                torch.matmul(x[:, :, : self.seq_length], self.random_matrix),
-                x[:, :, -1:],
+                torch.matmul(
+                    one_hot_input[:, :, : self.seq_length],
+                    self.random_matrix,
+                ),
+                one_hot_input[:, :, -1:],
             ),
             dim=2,
         )
@@ -105,4 +107,18 @@ class RijalEtAl(BaseModel):
         )
 
     def forward(self, genotypes: torch.Tensor):
-        return self.model(genotypes)
+        batch_size = genotypes.size(0)
+        seq_length = self.model_config.seq_length
+
+        # Create one-hot vector embedding for genotype data
+        one_hot_input = torch.zeros((batch_size, seq_length, seq_length), device=self.device)
+
+        # Set the diagonal elements to the genotype values
+        indices = torch.arange(seq_length, device=self.device)
+        one_hot_input[:, indices, indices] = genotypes
+
+        # Add a feature of ones (bias term)
+        ones = torch.ones((batch_size, seq_length, 1), device=self.device)
+        one_hot_input = torch.cat((one_hot_input, ones), dim=2)
+
+        return self.model(one_hot_input)

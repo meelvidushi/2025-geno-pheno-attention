@@ -4,8 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from analysis.base import BaseModel
-from analysis.train_ops import ModelConfig, TrainConfig
+from analysis.base import BaseModel, ModelConfig, TrainConfig
 
 
 class _PiecewiseTransformer(nn.Module):

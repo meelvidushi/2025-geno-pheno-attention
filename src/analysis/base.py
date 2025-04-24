@@ -68,7 +68,7 @@ class BaseModel(L.LightningModule, ABC):
         self.test_r2 = torchmetrics.R2Score()
 
     @abstractmethod
-    def forward(self, genotypes: torch.Tensor):
+    def forward(self, genotypes: torch.Tensor) -> torch.Tensor:
         pass
 
     @staticmethod

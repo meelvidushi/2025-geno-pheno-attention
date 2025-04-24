@@ -116,4 +116,21 @@ def _save_metrics(
 
 
 if __name__ == "__main__":
-    pass
+    model_config = ModelConfig(
+        model_type="rijal_et_al",
+        embedding_dim=32,
+        num_layers=3,
+        seq_length=1164,
+    )
+
+    train_config = TrainConfig(
+        data_dir=Path("datasets"),
+        save_dir=Path("models"),
+        name_prefix="reproduce",
+        phenotype="23C",
+        batch_size=64,
+        learning_rate=0.001,
+        max_epochs=200,
+    )
+
+    train_model(model_config, train_config)
