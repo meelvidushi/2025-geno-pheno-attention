@@ -11,38 +11,64 @@ from torch.nn.utils import clip_grad_norm_
 
 @attrs.define
 class TrainConfig:
-    # Data
+    # The data directory containing the train/validation/test datasets
     data_dir: Path = Path("./data")
+
+    # The root directory where models are saved
     save_dir: Path = Path("./models")
+
+    # This name of the subdirectory for the trained model. If left empty, a timestamp
+    # will be used.
     name_prefix: str = ""
+
+    # Which phenotype should trained?
     phenotype: str = "23C"
 
-    # Params
+    # The optimizer. Choose between adam and adamw
     optimizer: str = "adam"
+
+    # If the validation R^2 doesn't improve in this many epochs, end training early.
     patience: int = 200
+
+    # The batch size.
     batch_size: int = 64
+
+    # The learning rate.
     learning_rate: float = 0.001
+
+    # If True, the learning rate is halved if no improvement in the validation loss is
+    # seen in 5 epochs.
     lr_schedule: bool = False
+
     weight_decay: float = 0.0
+
+    # The number of training epochs without early stopping (see `patience`).
     max_epochs: int = 200
+
+    # The number of workers used for the dataloaders.
     num_workers: int = 1
+
+    # Clip the gradient norm. If 0.0, no gradient clipping is applied.
     gradient_clip_val: float = 0.0
 
-    # Modal (remote GPU execution) - https://modal.com/
+    # To use or not use Modal (remote GPU execution) - https://modal.com/
     use_modal: bool = False
+
+    # Whether you can detach locally without killing the remote Modal job.
     modal_detach: bool = True
 
 
 @attrs.define
 class ModelConfig:
+    # The model type to train. One of {rijal_et_al, piecewise_transformer}.
     model_type: str = "rijal_et_al"
 
-    # These are the only parameters used by Rijal
+    # These parameters are used by Rijal et al.
     seq_length: int = 1164
     embedding_dim: int = 13
     num_layers: int = 3
 
-    # Modifications
+    # These parameters are used in our modified model.
     skip_connections: bool = False
     dim_feedforward: int = 1024
     nhead: int = 4

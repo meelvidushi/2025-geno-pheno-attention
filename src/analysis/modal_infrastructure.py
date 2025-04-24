@@ -5,7 +5,15 @@ from pathlib import Path
 import attrs
 import modal
 
-from analysis.train import RunParams
+from analysis.base import ModelConfig, TrainConfig
+from analysis.dataset import (
+    GENO_TEST_PATHNAME,
+    GENO_TRAIN_PATHNAME,
+    GENO_VAL_PATHNAME,
+    PHENO_TEST_PATHNAME,
+    PHENO_TRAIN_PATHNAME,
+    PHENO_VAL_PATHNAME,
+)
 
 MOUNT = Path("/data")
 GPU_NAME = os.environ.get("MODAL_GPU_NAME", "A10G")
@@ -28,6 +36,7 @@ image = modal.Image.debian_slim(python_version="3.12").pip_install(
     "tensorboard==2.19.0",
     "tyro==0.9.19",
     "pyyaml==6.0.1",
+    "attrs==25.3.0",
 )
 
 with image.imports():
@@ -63,8 +72,22 @@ def prepare_remote_dirs_and_check_files(dirs_to_create: list[Path]):
     return existing_files
 
 
-def _setup_remote_directory(config: RunParams):
-    local_paths = []
+def _setup_remote_directory(config: TrainConfig):
+    local_paths: list[Path] = [
+        config.data_dir / name
+        for name in [
+            GENO_TEST_PATHNAME,
+            GENO_VAL_PATHNAME,
+            GENO_TRAIN_PATHNAME,
+            PHENO_TEST_PATHNAME,
+            PHENO_VAL_PATHNAME,
+            PHENO_TRAIN_PATHNAME,
+        ]
+    ]
+
+    for local_path in local_paths:
+        if not local_path.exists():
+            raise FileNotFoundError(f"Local path '{local_path}' file not found.")
 
     dirs_to_create = set()
     dirs_to_create.add(MOUNT / config.save_dir)
@@ -126,26 +149,25 @@ def _download_model(run_log_dir: Path):
     memory=MEMORY,
     cpu=1,
 )
-def _train_model(config: RunParams):
-    # Force GPU acceleration in the container
-    run_log_dir = train_model(config)
+def _train_model(model_config: ModelConfig, train_config: TrainConfig):
+    run_log_dir = train_model(model_config, train_config)
 
     volume.commit()
 
     return run_log_dir
 
 
-def train_model_with_modal(config: RunParams):
-    _setup_remote_directory(config)
+def train_model_with_modal(model_config: ModelConfig, train_config: TrainConfig):
+    _setup_remote_directory(train_config)
 
-    remote_config = attrs.evolve(
-        config,
-        data_dir=MOUNT / config.data_dir,
-        save_dir=MOUNT / config.save_dir,
+    remote_train_config = attrs.evolve(
+        train_config,
+        data_dir=MOUNT / train_config.data_dir,
+        save_dir=MOUNT / train_config.save_dir,
     )
-    run_log_dir = _train_model.remote(remote_config)
+    run_log_dir = _train_model.remote(model_config, remote_train_config)
 
-    _download_model(Path(run_log_dir))
+    _download_model(run_log_dir)
 
 
 if __name__ == "__main__":

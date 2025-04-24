@@ -5,6 +5,13 @@ import torch
 from torch.utils.data import Dataset
 from torch.utils.data.dataloader import DataLoader
 
+GENO_TRAIN_PATHNAME = "geno_train.npy"
+PHENO_TRAIN_PATHNAME = "pheno_train.npy"
+GENO_VAL_PATHNAME = "geno_val.npy"
+PHENO_VAL_PATHNAME = "pheno_val.npy"
+GENO_TEST_PATHNAME = "geno_test.npy"
+PHENO_TEST_PATHNAME = "pheno_test.npy"
+
 phenotype_names: list[str] = [
     "23C",
     "25C",
@@ -74,20 +81,20 @@ def create_dataloaders(
         Tuple containing train, val, and test dataloaders
     """
     train_dataset = GenoPhenoDataset(
-        data_dir / "geno_train.npy",
-        data_dir / "pheno_train.npy",
+        data_dir / GENO_TRAIN_PATHNAME,
+        data_dir / PHENO_TRAIN_PATHNAME,
         phenotype_name,
     )
 
     val_dataset = GenoPhenoDataset(
-        data_dir / "geno_val.npy",
-        data_dir / "pheno_val.npy",
+        data_dir / GENO_VAL_PATHNAME,
+        data_dir / PHENO_VAL_PATHNAME,
         phenotype_name,
     )
 
     test_dataset = GenoPhenoDataset(
-        data_dir / "geno_test.npy",
-        data_dir / "pheno_test.npy",
+        data_dir / GENO_TEST_PATHNAME,
+        data_dir / PHENO_TEST_PATHNAME,
         phenotype_name,
     )
 
@@ -119,30 +126,3 @@ def create_dataloaders(
     )
 
     return train_loader, val_loader, test_loader
-
-
-if __name__ == "__main__":
-    train = GenoPhenoDataset(
-        Path("./data/geno_train.npy"),
-        Path("./data/pheno_train.npy"),
-        "23C",
-    )
-
-    val = GenoPhenoDataset(
-        Path("./data/geno_val.npy"),
-        Path("./data/pheno_val.npy"),
-        "23C",
-    )
-
-    test = GenoPhenoDataset(
-        Path("./data/geno_test.npy"),
-        Path("./data/pheno_test.npy"),
-        "23C",
-    )
-
-    dataloader = DataLoader(train, 16, shuffle=True)
-
-    for batch in dataloader:
-        geno, pheno = batch
-        print(geno, pheno)
-        break

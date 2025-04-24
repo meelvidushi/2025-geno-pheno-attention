@@ -12,7 +12,7 @@ from analysis.piecewise_transformer import PiecewiseTransformer
 from analysis.rijal_et_al import RijalEtAl
 
 
-def train_model(model_config: ModelConfig, train_config: TrainConfig):
+def train_model(model_config: ModelConfig, train_config: TrainConfig) -> Path:
     L.seed_everything(42)
 
     train_dataloader, val_dataloader, test_dataloader = create_dataloaders(
@@ -40,9 +40,9 @@ def train_model(model_config: ModelConfig, train_config: TrainConfig):
 
     checkpoint_callback = ModelCheckpoint(
         save_top_k=1,
-        monitor="val_loss",
-        mode="min",
-        filename="best-{epoch:02d}-{val_loss:.4f}",
+        monitor="val_r2",
+        mode="max",
+        filename="best-{epoch:03d}-{val_r2:.4f}",
         verbose=True,
     )
 
@@ -67,7 +67,8 @@ def train_model(model_config: ModelConfig, train_config: TrainConfig):
     # Save metrics to CSV using the best checkpoint
     _save_metrics(trainer, model, val_dataloader, test_dataloader, checkpoint_callback)
 
-    return trainer.log_dir
+    assert trainer.log_dir is not None
+    return Path(trainer.log_dir)
 
 
 def _save_metrics(
@@ -116,21 +117,4 @@ def _save_metrics(
 
 
 if __name__ == "__main__":
-    model_config = ModelConfig(
-        model_type="rijal_et_al",
-        embedding_dim=32,
-        num_layers=3,
-        seq_length=1164,
-    )
-
-    train_config = TrainConfig(
-        data_dir=Path("datasets"),
-        save_dir=Path("models"),
-        name_prefix="reproduce",
-        phenotype="23C",
-        batch_size=64,
-        learning_rate=0.001,
-        max_epochs=200,
-    )
-
-    train_model(model_config, train_config)
+    pass
