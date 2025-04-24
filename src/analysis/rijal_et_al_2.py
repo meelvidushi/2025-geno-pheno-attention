@@ -267,7 +267,7 @@ def train_single_phenotype(config: RijalEtAlConfig, phenotype: str):
         skip_connections=config.skip_connections,
     )
 
-    model = torch.compile(model, mode="reduce-overhead")
+    #model = torch.compile(model, mode="reduce-overhead")
 
     early_stopping = EarlyStopping(
         monitor="val_loss",
