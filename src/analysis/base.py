@@ -86,9 +86,11 @@ class ModelConfig:
 
     # These parameters are used in our modified model.
     skip_connections: bool = False
+    scaled_attention: bool = False
+    attention_bias: bool = False
     dim_feedforward: int = 1024
     nhead: int = 4
-    dropout_rate: float = 0.1
+    dropout_rate: float = 0.0
 
 
 class BaseModel(L.LightningModule, ABC):
@@ -104,10 +106,11 @@ class BaseModel(L.LightningModule, ABC):
         self.save_hyperparameters()
 
         self.train_config = train_config
+        self.phenotypes = self.train_config.phenotypes
 
         self.loss_fn = nn.MSELoss()
-        self.val_r2 = torchmetrics.R2Score()
-        self.test_r2 = torchmetrics.R2Score()
+        self.val_r2 = torchmetrics.R2Score(multioutput="raw_values")
+        self.test_r2 = torchmetrics.R2Score(multioutput="raw_values")
 
     @abstractmethod
     def forward(self, genotypes: torch.Tensor) -> torch.Tensor:
@@ -146,12 +149,32 @@ class BaseModel(L.LightningModule, ABC):
     def test_step(self, batch, _):
         self._step(batch, "test")
 
+    def _phenotype_r2_dict(self, prefix: str, r2s: torch.Tensor) -> dict[str, torch.Tensor]:
+        metric_names = [f"{prefix}_{pheno}" for pheno in self.phenotypes]
+        return dict(zip(metric_names, r2s, strict=True))
+
     def on_validation_epoch_end(self):
-        self.log("val_r2", self.val_r2.compute(), prog_bar=True)
+        r2s = self.val_r2.compute() # (P,)
+        per_pheno_r2s = self._phenotype_r2_dict("val_r2", r2s)
+
+        # Log the per phenotype R2s
+        self.log_dict(per_pheno_r2s)
+
+        # Log the uniform average of all the pheno R2s
+        self.log("val_r2", r2s.mean(), prog_bar=True)
+
         self.val_r2.reset()
 
     def on_test_epoch_end(self):
-        self.log("test_r2", self.test_r2.compute())
+        r2s = self.test_r2.compute() # (P,)
+        per_pheno_r2s = self._phenotype_r2_dict("test_r2", r2s)
+
+        # Log the per phenotype R2s
+        self.log_dict(per_pheno_r2s)
+
+        # Log the uniform average of all the pheno R2s
+        self.log("test_r2", r2s.mean(), prog_bar=True)
+
         self.test_r2.reset()
 
     def on_before_optimizer_step(self, optimizer):

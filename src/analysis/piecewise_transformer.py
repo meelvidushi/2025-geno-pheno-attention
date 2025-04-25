@@ -16,7 +16,8 @@ class _PiecewiseTransformer(nn.Module):
         num_layers: int = 3,
         skip_connections: bool = False,
         scaled_attention: bool = False,
-        dropout_rate: float = 0.1,
+        dropout_rate: float = 0.0,
+        attention_bias: bool = False,
     ):
         super().__init__()
         self.embedding_dim = embedding_dim
@@ -25,17 +26,27 @@ class _PiecewiseTransformer(nn.Module):
         self.num_layers = num_layers
         self.skip_connections = skip_connections
         self.scaled_attention = scaled_attention
+        self.attention_bias = attention_bias
 
         self.locus_embeddings = nn.Parameter(torch.empty(seq_length, embedding_dim))  # (L, D)
 
         self.q_linears = nn.ModuleList(
-            [nn.Linear(embedding_dim, embedding_dim, bias=True) for _ in range(num_layers)]
+            [
+                nn.Linear(embedding_dim, embedding_dim, bias=self.attention_bias)
+                for _ in range(num_layers)
+            ]
         )
         self.k_linears = nn.ModuleList(
-            [nn.Linear(embedding_dim, embedding_dim, bias=True) for _ in range(num_layers)]
+            [
+                nn.Linear(embedding_dim, embedding_dim, bias=self.attention_bias)
+                for _ in range(num_layers)
+            ]
         )
         self.v_linears = nn.ModuleList(
-            [nn.Linear(embedding_dim, embedding_dim, bias=True) for _ in range(num_layers)]
+            [
+                nn.Linear(embedding_dim, embedding_dim, bias=self.attention_bias)
+                for _ in range(num_layers)
+            ]
         )
 
         self.dropout = nn.Dropout(dropout_rate)
@@ -109,7 +120,9 @@ class PiecewiseTransformer(BaseModel):
             seq_length=model_config.seq_length,
             num_layers=model_config.num_layers,
             skip_connections=model_config.skip_connections,
+            scaled_attention=model_config.scaled_attention,
             dropout_rate=model_config.dropout_rate,
+            attention_bias=model_config.attention_bias,
         )
 
     def forward(self, genotypes: torch.Tensor):
