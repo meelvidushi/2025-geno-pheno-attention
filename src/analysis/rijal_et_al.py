@@ -99,6 +99,12 @@ class RijalEtAl(BaseModel):
         self.save_hyperparameters()
 
         self.model_config = model_config
+        self.num_phenotypes = len(train_config.phenotypes)
+
+        # This model only supports single phenotype prediction. It could be extended,
+        # but I didn't want to risk changing the nature of this model in any way, since
+        # it is currently reproducing the paper results in Figure 3.
+        assert self.num_phenotypes == 1, "RijalEtAl only supports predicting a single phenotype"
 
         self.model = _RijalEtAl(
             embedding_dim=model_config.embedding_dim,
@@ -121,4 +127,6 @@ class RijalEtAl(BaseModel):
         ones = torch.ones((batch_size, seq_length, 1), device=self.device)
         one_hot_input = torch.cat((one_hot_input, ones), dim=2)
 
-        return self.model(one_hot_input)
+        # Get raw predictions and reshape to (batch_size, 1) to match expected interface
+        predictions = self.model(one_hot_input).unsqueeze(1)
+        return predictions

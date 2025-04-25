@@ -35,35 +35,35 @@ phenotype_names: list[str] = [
 
 
 class GenoPhenoDataset(Dataset):
-    def __init__(self, genotype_path: Path, phenotype_path: Path, phenotype_name: str):
+    def __init__(self, genotype_path: Path, phenotype_path: Path, phenotypes: list[str]):
         """Dataset for genotype-phenotype data
 
         Args:
             genotype_path: Path to genotype numpy file (.npy).
             phenotype_path: Path to phenotype numpy file (.npy).
-            phenotype_name: Name of the phenotype.
+            phenotypes: List of phenotype names to predict.
         """
-        self.phenotype_name = phenotype_name
-        self._phenotype_idx = phenotype_names.index(self.phenotype_name)
+        self.phenotypes_list = phenotypes
+        self._phenotype_indices = [phenotype_names.index(pheno) for pheno in self.phenotypes_list]
 
         self.genotypes = torch.from_numpy(np.load(genotype_path)).float()
-        self.phenotypes = torch.from_numpy(np.load(phenotype_path)).float()
+        self.phenotypes_data = torch.from_numpy(np.load(phenotype_path)).float()
 
-        assert self.genotypes.size(0) == self.phenotypes.size(0)
+        assert self.genotypes.size(0) == self.phenotypes_data.size(0)
 
     def __len__(self) -> int:
         return len(self.genotypes)
 
     def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
         genotype = self.genotypes[idx]
-        phenotype = self.phenotypes[idx, self._phenotype_idx]
+        phenotypes = self.phenotypes_data[idx, self._phenotype_indices]
 
-        return genotype, phenotype
+        return genotype, phenotypes
 
 
 def create_dataloaders(
     data_dir: Path,
-    phenotype_name: str,
+    phenotypes: list[str],
     batch_size: int,
     num_workers: int = 4,
     pin_memory: bool = True,
@@ -72,7 +72,7 @@ def create_dataloaders(
 
     Args:
         data_dir: Directory containing the data files
-        phenotype_name: Name of the phenotype to predict
+        phenotypes: List of phenotype names to predict
         batch_size: Batch size for dataloaders
         num_workers: Number of worker processes for dataloaders
         pin_memory: Whether to pin memory in dataloaders
@@ -83,19 +83,19 @@ def create_dataloaders(
     train_dataset = GenoPhenoDataset(
         data_dir / GENO_TRAIN_PATHNAME,
         data_dir / PHENO_TRAIN_PATHNAME,
-        phenotype_name,
+        phenotypes,
     )
 
     val_dataset = GenoPhenoDataset(
         data_dir / GENO_VAL_PATHNAME,
         data_dir / PHENO_VAL_PATHNAME,
-        phenotype_name,
+        phenotypes,
     )
 
     test_dataset = GenoPhenoDataset(
         data_dir / GENO_TEST_PATHNAME,
         data_dir / PHENO_TEST_PATHNAME,
-        phenotype_name,
+        phenotypes,
     )
 
     train_loader = DataLoader(
@@ -126,3 +126,14 @@ def create_dataloaders(
     )
 
     return train_loader, val_loader, test_loader
+
+
+if __name__ == "__main__":
+    data_dir = Path("datasets")
+    dataset = GenoPhenoDataset(
+        data_dir / GENO_TRAIN_PATHNAME,
+        data_dir / PHENO_TRAIN_PATHNAME,
+        phenotype_names,
+    )
+
+    dataloader = DataLoader(dataset, batch_size=8)

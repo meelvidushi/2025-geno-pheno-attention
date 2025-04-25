@@ -12,6 +12,7 @@ class _PiecewiseTransformer(nn.Module):
         self,
         embedding_dim: int,
         seq_length: int,
+        num_phenotypes: int = 1,
         num_layers: int = 3,
         skip_connections: bool = False,
         scaled_attention: bool = False,
@@ -20,6 +21,7 @@ class _PiecewiseTransformer(nn.Module):
         super().__init__()
         self.embedding_dim = embedding_dim
         self.seq_length = seq_length
+        self.num_phenotypes = num_phenotypes
         self.num_layers = num_layers
         self.skip_connections = skip_connections
         self.scaled_attention = scaled_attention
@@ -38,14 +40,16 @@ class _PiecewiseTransformer(nn.Module):
 
         self.dropout = nn.Dropout(dropout_rate)
 
-        self.coeffs_attended = nn.Parameter(torch.empty(seq_length, embedding_dim))  # (L, D)
-        self.offset = nn.Parameter(torch.zeros(1))
+        self.readout = nn.Linear(
+            seq_length * embedding_dim,
+            num_phenotypes,
+            bias=True,
+        )
 
         self._reset_parameters()
 
     def _reset_parameters(self):
         nn.init.xavier_uniform_(self.locus_embeddings)
-        nn.init.xavier_uniform_(self.coeffs_attended)
         for q, k, v in zip(self.q_linears, self.k_linears, self.v_linears, strict=False):
             nn.init.xavier_uniform_(q.weight)
             nn.init.xavier_uniform_(k.weight)
@@ -54,7 +58,6 @@ class _PiecewiseTransformer(nn.Module):
                 nn.init.zeros_(q.bias)
                 nn.init.zeros_(k.bias)
                 nn.init.zeros_(v.bias)
-        nn.init.zeros_(self.offset)
 
     def forward(self, genotypes: torch.Tensor) -> torch.Tensor:
         """Forward pass.
@@ -87,9 +90,10 @@ class _PiecewiseTransformer(nn.Module):
             else:
                 x = attn_out
 
-        phenotype = torch.einsum("bij,ij->b", x, self.coeffs_attended) + self.offset
+        x = x.reshape(x.size(0), -1)  # (B, L*D)
+        phenotypes = self.readout(x)
 
-        return phenotype
+        return phenotypes
 
 
 class PiecewiseTransformer(BaseModel):
@@ -101,6 +105,7 @@ class PiecewiseTransformer(BaseModel):
 
         self.model = _PiecewiseTransformer(
             embedding_dim=model_config.embedding_dim,
+            num_phenotypes=train_config.num_phenotypes,
             seq_length=model_config.seq_length,
             num_layers=model_config.num_layers,
             skip_connections=model_config.skip_connections,

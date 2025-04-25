@@ -1,10 +1,13 @@
 import os
 import subprocess
+from collections.abc import Iterable
 from pathlib import Path
 
 import attrs
 import modal
 import torch
+from rich import inspect
+from rich.console import Console
 
 from analysis.base import ModelConfig, TrainConfig
 from analysis.dataset import (
@@ -15,6 +18,8 @@ from analysis.dataset import (
     PHENO_TRAIN_PATHNAME,
     PHENO_VAL_PATHNAME,
 )
+
+console = Console()
 
 APP_NAME = "geno-pheno-attention-training"
 
@@ -118,8 +123,8 @@ def run_training(model_config: ModelConfig, train_config: TrainConfig):
     memory=1024,
 )
 @modal.web_server(6006)
-def tensorboard_server(logdir: str = "./"):
-    full_logdir = str(MOUNT / logdir)
+def tensorboard_server():
+    full_logdir = str(MOUNT)
     subprocess.Popen(f"tensorboard --logdir={full_logdir} --bind_all --port 6006", shell=True)
 
 
@@ -164,7 +169,7 @@ def setup_remote_directory(config: TrainConfig):
     print("Files uploaded successfully")
 
 
-def download_model(run_log_dir: Path):
+def download_model(run_log_dir: Path) -> Path:
     print(f"Training completed. Run artifacts saved in Modal volume at: {run_log_dir}")
 
     # Maintain the same directory structure locally as on the remote
@@ -185,17 +190,27 @@ def download_model(run_log_dir: Path):
             "geno-pheno-attention-data",
             str(relative_path),
             str(local_full_path.parent),
+            "--force",
         ],
         check=True,
     )
 
     print(f"Model artifacts downloaded successfully to {local_full_path}")
 
+    return local_full_path
 
-def train_model_with_modal(model_config: ModelConfig, train_config: TrainConfig):
-    print("Starting training job...")
-    print(f"{model_config=}")
-    print(f"{train_config=}")
+
+def train_model_with_modal(
+    model_config: ModelConfig,
+    train_config: TrainConfig,
+    blocking: bool = True,
+) -> Path | modal.FunctionCall:
+    print("Starting training job... Check tensorboard server for progress.")
+    console.print("[bold blue]Model Config:[/bold blue]")
+    inspect(model_config, methods=False, docs=False)
+
+    console.print("\n[bold blue]Train Config:[/bold blue]")
+    inspect(train_config, methods=False, docs=False)
 
     setup_remote_directory(train_config)
 
@@ -204,13 +219,22 @@ def train_model_with_modal(model_config: ModelConfig, train_config: TrainConfig)
         data_dir=MOUNT / train_config.data_dir,
         save_dir=MOUNT / train_config.save_dir,
     )
-    run_log_dir = TRAIN_FUNCTION.remote(model_config, remote_train_config)
 
-    print("Finished training.")
+    if blocking:
+        run_log_dir = TRAIN_FUNCTION.remote(model_config, remote_train_config)
+        print("Finished training.")
+        return download_model(run_log_dir)
+    else:
+        return TRAIN_FUNCTION.spawn(model_config, remote_train_config)
 
-    download_model(run_log_dir)
 
+def train_models_with_modal(jobs: Iterable[tuple[ModelConfig, TrainConfig]]) -> list[Path]:
+    for _, train_config in jobs:
+        assert train_config.use_modal
 
-if __name__ == "__main__":
-    # Use train.py with --use-modal
-    pass
+    handles = [
+        train_model_with_modal(model_config, train_config, blocking=False)
+        for model_config, train_config in jobs
+    ]
+
+    return [download_model(run_dir) for run_dir in modal.FunctionCall.gather(*handles)]

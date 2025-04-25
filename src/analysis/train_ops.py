@@ -11,24 +11,29 @@ from analysis.dataset import create_dataloaders
 from analysis.piecewise_transformer import PiecewiseTransformer
 from analysis.rijal_et_al import RijalEtAl
 
+model_str_to_cls: dict[str, type[L.LightningModule]] = {
+    "rijal_et_al": RijalEtAl,
+    "piecewise_transformer": PiecewiseTransformer,
+}
+
 
 def train_model(model_config: ModelConfig, train_config: TrainConfig) -> Path:
     L.seed_everything(42)
 
     train_dataloader, val_dataloader, test_dataloader = create_dataloaders(
         data_dir=train_config.data_dir,
-        phenotype_name=train_config.phenotype,
+        phenotypes=train_config.phenotypes,
         batch_size=train_config.batch_size,
         num_workers=train_config.num_workers,
     )
 
-    if model_config.model_type == "rijal_et_al":
-        model_cls = RijalEtAl
-    elif model_config.model_type == "piecewise_transformer":
-        model_cls = PiecewiseTransformer
-    else:
-        raise NotImplementedError()
+    model_type = model_config.model_type
+    if model_type not in model_str_to_cls:
+        raise NotImplementedError(
+            f"{model_type} not an understood model type. Available: {list(model_str_to_cls.keys())}"
+        )
 
+    model_cls = model_str_to_cls[model_type]
     model = model_cls(model_config, train_config)
 
     early_stopping = EarlyStopping(

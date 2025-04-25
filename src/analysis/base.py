@@ -18,8 +18,8 @@ class TrainConfig:
     # This name of the subdirectory for the trained model. If left empty, a timestamp
     # will be used.
     name_prefix: str = ""
-    # Which phenotype should trained?
-    phenotype: str = "23C"
+    # Which phenotypes should be trained?
+    phenotypes: list[str] = ["23C"]
     # The optimizer. Choose between adam and adamw
     optimizer: str = "adam"
     # If the validation R^2 doesn't improve in this many epochs, end training early.
@@ -43,6 +43,10 @@ class TrainConfig:
     use_modal: bool = False
     # Whether you can detach locally without killing the remote Modal job.
     modal_detach: bool = True
+
+    @property
+    def num_phenotypes(self) -> int:
+        return len(self.phenotypes)
 
 
 @attrs.define
@@ -86,16 +90,18 @@ class BaseModel(L.LightningModule, ABC):
 
     @staticmethod
     def _strip_nan(genotypes: torch.Tensor, phenotypes: torch.Tensor):
-        mask = ~torch.isnan(phenotypes)
+        # Phenotypes will always be (B, P) where P is number of phenotypes
+        # Reject any sample with ANY NaN phenotype
+        mask = ~torch.isnan(phenotypes).any(dim=1)
         return genotypes[mask], phenotypes[mask]
 
     def _step(self, batch, phase: str):
-        genotypes, phenotypes = batch  # shapes: (B, L), (B,)
+        genotypes, phenotypes = batch  # shapes: (B, L), (B, P)
         genotypes, phenotypes = self._strip_nan(genotypes, phenotypes)
         if genotypes.numel() == 0:
             return None  # all‑NaN batch—skip
 
-        preds = self(genotypes)
+        preds = self(genotypes)  # Expected shape: (B, P)
         loss = self.loss_fn(preds, phenotypes)
         self.log(f"{phase}_loss", loss, prog_bar=True, on_step=(phase == "train"))
 
