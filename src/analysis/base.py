@@ -8,6 +8,8 @@ import torch.nn as nn
 import torchmetrics
 from torch.nn.utils import clip_grad_norm_
 
+from analysis.dataset import phenotype_names
+
 
 @attrs.define
 class TrainConfig:
@@ -19,7 +21,7 @@ class TrainConfig:
     # will be used.
     name_prefix: str = ""
     # Which phenotypes should be trained?
-    phenotypes: list[str] = ["23C"]
+    phenotypes: list[str] = phenotype_names
     # The optimizer. Choose between adam and adamw
     optimizer: str = "adam"
     # If the validation R^2 doesn't improve in this many epochs, end training early.
@@ -39,6 +41,8 @@ class TrainConfig:
     num_workers: int = 1
     # Clip the gradient norm. If 0.0, no gradient clipping is applied.
     gradient_clip_val: float = 0.0
+    # Return cached model that matches name_prefix, instead of training.
+    use_cache: bool = True
     # To use or not use Modal (remote GPU execution) - https://modal.com/
     use_modal: bool = False
     # Whether you can detach locally without killing the remote Modal job.
@@ -47,6 +51,27 @@ class TrainConfig:
     @property
     def num_phenotypes(self) -> int:
         return len(self.phenotypes)
+
+    @property
+    def expected_model_dir(self) -> Path | None:
+        if self.name_prefix == "":
+            return None
+
+        return Path(f"{self.save_dir}/{self.name_prefix}/lightning_logs")
+
+    def get_latest_version_dir(self) -> Path | None:
+        if not self.expected_model_dir:
+            return None
+
+        if not self.expected_model_dir.exists():
+            return None
+
+        version_dirs = {
+            version_dir: int(version_dir.stem.split("_")[1])
+            for version_dir in self.expected_model_dir.glob("version_*")
+        }
+
+        return max(version_dirs, key=lambda x: version_dirs[x])
 
 
 @attrs.define
