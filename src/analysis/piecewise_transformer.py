@@ -61,10 +61,10 @@ class _PiecewiseTransformer(nn.Module):
 
     def _reset_parameters(self):
         nn.init.xavier_uniform_(self.locus_embeddings)
-        for q, k, v in zip(self.q_linears, self.k_linears, self.v_linears, strict=False):
-            nn.init.xavier_uniform_(q.weight)
-            nn.init.xavier_uniform_(k.weight)
-            nn.init.xavier_uniform_(v.weight)
+        for q, k, v in zip(self.q_linears, self.k_linears, self.v_linears, strict=True):
+            nn.init.normal_(q.weight, std=0.03)
+            nn.init.normal_(k.weight, std=0.03)
+            nn.init.normal_(v.weight, std=0.03)
             if q.bias is not None:
                 nn.init.zeros_(q.bias)
                 nn.init.zeros_(k.bias)

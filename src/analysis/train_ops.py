@@ -1,3 +1,4 @@
+import random
 from datetime import datetime
 from pathlib import Path
 
@@ -18,7 +19,13 @@ model_str_to_cls: dict[str, type[L.LightningModule]] = {
 
 
 def train_model(model_config: ModelConfig, train_config: TrainConfig) -> Path:
-    L.seed_everything(42)
+    # Use the provided seed or generate a random one if None
+    if train_config.seed is None:
+        seed = random.randint(0, 2**32 - 1)
+    else:
+        seed = train_config.seed
+
+    L.seed_everything(seed)
 
     train_dataloader, val_dataloader, test_dataloader = create_dataloaders(
         data_dir=train_config.data_dir,
@@ -103,6 +110,7 @@ def _save_metrics(
     test_loss = test_results["test_loss"]
     test_r2 = test_results["test_r2"]
 
+    # Initialize the metrics dictionary with aggregate metrics
     metrics_dict = {
         "best_val_loss": best_val_loss,
         "final_val_loss": final_val_loss,
@@ -112,6 +120,18 @@ def _save_metrics(
         "test_r2": test_r2,
         "checkpoint_path": best_model_path,
     }
+
+    # Extract per-phenotype R2 values
+    for key, value in best_val_results.items():
+        if key.startswith("val_r2_") and key != "val_r2":
+            phenotype = key.replace("val_r2_", "")
+            metrics_dict[f"best_val_r2_{phenotype}"] = value
+
+    for key, value in test_results.items():
+        if key.startswith("test_r2_") and key != "test_r2":
+            phenotype = key.replace("test_r2_", "")
+            metrics_dict[f"test_r2_{phenotype}"] = value
+
     metrics_df = pd.DataFrame(metrics_dict.items(), columns=pd.Index(["metric", "value"]))
 
     assert trainer.log_dir is not None

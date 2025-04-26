@@ -47,6 +47,8 @@ class TrainConfig:
     use_modal: bool = False
     # Whether you can detach locally without killing the remote Modal job.
     modal_detach: bool = True
+    # Random seed for reproducibility. If None, a random seed will be chosen.
+    seed: int | None = None
 
     @property
     def num_phenotypes(self) -> int:
@@ -150,11 +152,13 @@ class BaseModel(L.LightningModule, ABC):
         self._step(batch, "test")
 
     def _phenotype_r2_dict(self, prefix: str, r2s: torch.Tensor) -> dict[str, torch.Tensor]:
+        if not len(r2s.size()):
+            r2s = r2s.unsqueeze(0)
         metric_names = [f"{prefix}_{pheno}" for pheno in self.phenotypes]
         return dict(zip(metric_names, r2s, strict=True))
 
     def on_validation_epoch_end(self):
-        r2s = self.val_r2.compute() # (P,)
+        r2s = self.val_r2.compute() # (P,) or 1
         per_pheno_r2s = self._phenotype_r2_dict("val_r2", r2s)
 
         # Log the per phenotype R2s
@@ -166,7 +170,7 @@ class BaseModel(L.LightningModule, ABC):
         self.val_r2.reset()
 
     def on_test_epoch_end(self):
-        r2s = self.test_r2.compute() # (P,)
+        r2s = self.test_r2.compute() # (P,) or 1
         per_pheno_r2s = self._phenotype_r2_dict("test_r2", r2s)
 
         # Log the per phenotype R2s
