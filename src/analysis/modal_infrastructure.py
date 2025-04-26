@@ -125,7 +125,10 @@ def run_training(model_config: ModelConfig, train_config: TrainConfig):
 @modal.web_server(6006)
 def tensorboard_server():
     full_logdir = str(MOUNT)
-    subprocess.Popen(f"tensorboard --logdir={full_logdir} --bind_all --port 6006", shell=True)
+    subprocess.Popen(
+        f"tensorboard --logdir={full_logdir} --bind_all --port 6006 --load_fast true",
+        shell=True,
+    )
 
 
 def setup_remote_directory(config: TrainConfig):

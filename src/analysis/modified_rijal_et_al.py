@@ -7,7 +7,7 @@ import torch.nn.functional as F
 from analysis.base import BaseModel, ModelConfig, TrainConfig
 
 
-class _PiecewiseTransformer(nn.Module):
+class _ModifiedRijalEtAl(nn.Module):
     def __init__(
         self,
         embedding_dim: int,
@@ -16,6 +16,7 @@ class _PiecewiseTransformer(nn.Module):
         num_layers: int = 3,
         skip_connections: bool = False,
         scaled_attention: bool = False,
+        layer_norm: bool = False,
         dropout_rate: float = 0.0,
         attention_bias: bool = False,
     ):
@@ -26,9 +27,11 @@ class _PiecewiseTransformer(nn.Module):
         self.num_layers = num_layers
         self.skip_connections = skip_connections
         self.scaled_attention = scaled_attention
+        self.layer_norm = layer_norm
         self.attention_bias = attention_bias
 
-        self.locus_embeddings = nn.Parameter(torch.empty(seq_length, embedding_dim))  # (L, D)
+        self.locus_embeddings = nn.Embedding(seq_length, embedding_dim)  # (L, D)
+        self.register_buffer("locus_indices", torch.arange(self.seq_length))
 
         self.q_linears = nn.ModuleList(
             [
@@ -49,6 +52,11 @@ class _PiecewiseTransformer(nn.Module):
             ]
         )
 
+        if self.layer_norm:
+            self.norms = nn.ModuleList(
+                [nn.LayerNorm(embedding_dim) for _ in range(num_layers)]
+            )
+
         self.dropout = nn.Dropout(dropout_rate)
 
         self.readout = nn.Linear(
@@ -60,7 +68,7 @@ class _PiecewiseTransformer(nn.Module):
         self._reset_parameters()
 
     def _reset_parameters(self):
-        nn.init.xavier_uniform_(self.locus_embeddings)
+        nn.init.normal_(self.locus_embeddings.weight, std=0.03)
         for q, k, v in zip(self.q_linears, self.k_linears, self.v_linears, strict=True):
             nn.init.normal_(q.weight, std=0.03)
             nn.init.normal_(k.weight, std=0.03)
@@ -78,23 +86,28 @@ class _PiecewiseTransformer(nn.Module):
         Returns:
             Tensor: shape ``(B,)`` predicted phenotype.
         """
+        embeddings = self.locus_embeddings(self.locus_indices)
         # (B, L, D) = (B, L, 1) * (L, D)
-        x = genotypes.unsqueeze(-1) * self.locus_embeddings  # broadcasting mult
+        x = genotypes.unsqueeze(-1) * embeddings
 
         for i in range(self.num_layers):
-            q = self.q_linears[i](x)  # (B, L, D)
-            k = self.k_linears[i](x)  # (B, L, D)
-            v = self.v_linears[i](x)  # (B, L, D)
+            # Pre-layer normalization.
+            if self.layer_norm:
+                x_norm = self.norms[i](x)
+            else:
+                x_norm = x
+
+            q = self.q_linears[i](x_norm)  # (B, L, D)
+            k = self.k_linears[i](x_norm)  # (B, L, D)
+            v = self.v_linears[i](x_norm)  # (B, L, D)
 
             scores = torch.matmul(q, k.transpose(1, 2))
-
             if self.scaled_attention:
                 scores = scores / math.sqrt(self.embedding_dim)
-
             attn = F.softmax(scores, dim=-1)
-            attn_out = torch.matmul(attn, v)  # (B, L, D)
 
-            attn_out = self.dropout(attn_out)  # dropout on attention output
+            attn_out = torch.matmul(attn, v)  # (B, L, D)
+            attn_out = self.dropout(attn_out)
 
             if self.skip_connections and i > 0:
                 x = x + attn_out
@@ -102,23 +115,24 @@ class _PiecewiseTransformer(nn.Module):
                 x = attn_out
 
         x = x.reshape(x.size(0), -1)  # (B, L*D)
-        phenotypes = self.readout(x)
+        phenotypes = self.readout(self.dropout(x))
 
         return phenotypes
 
 
-class PiecewiseTransformer(BaseModel):
+class ModifiedRijalEtAl(BaseModel):
     def __init__(self, model_config: ModelConfig, train_config: TrainConfig):
         super().__init__(train_config)
         self.save_hyperparameters()
 
         self.model_config = model_config
 
-        self.model = _PiecewiseTransformer(
+        self.model = _ModifiedRijalEtAl(
             embedding_dim=model_config.embedding_dim,
             num_phenotypes=train_config.num_phenotypes,
             seq_length=model_config.seq_length,
             num_layers=model_config.num_layers,
+            layer_norm=model_config.layer_norm,
             skip_connections=model_config.skip_connections,
             scaled_attention=model_config.scaled_attention,
             dropout_rate=model_config.dropout_rate,

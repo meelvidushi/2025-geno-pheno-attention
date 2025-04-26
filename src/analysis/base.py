@@ -31,7 +31,7 @@ class TrainConfig:
     # The learning rate.
     learning_rate: float = 0.001
     # If True, the learning rate is halved if no improvement in the validation loss is
-    # seen in 5 epochs.
+    # seen in 10 epochs.
     lr_schedule: bool = False
     # Weight decay.
     weight_decay: float = 0.0
@@ -78,7 +78,7 @@ class TrainConfig:
 
 @attrs.define
 class ModelConfig:
-    # The model type to train. One of {rijal_et_al, piecewise_transformer}.
+    # The model type to train. One of {rijal_et_al, modified}.
     model_type: str = "rijal_et_al"
 
     # These parameters are used by Rijal et al.
@@ -90,6 +90,7 @@ class ModelConfig:
     skip_connections: bool = False
     scaled_attention: bool = False
     attention_bias: bool = False
+    layer_norm: bool = False
     dim_feedforward: int = 1024
     nhead: int = 4
     dropout_rate: float = 0.0
@@ -206,7 +207,7 @@ class BaseModel(L.LightningModule, ABC):
                 weight_decay=self.train_config.weight_decay,
             )
         elif self.train_config.optimizer == "adam":
-            optimizer = torch.optim.AdamW(
+            optimizer = torch.optim.Adam(
                 self.parameters(),
                 lr=self.train_config.learning_rate,
             )
@@ -220,7 +221,7 @@ class BaseModel(L.LightningModule, ABC):
             optimizer=optimizer,
             mode="min",
             factor=0.5,
-            patience=5,
+            patience=10,
             min_lr=1e-7,
         )
 

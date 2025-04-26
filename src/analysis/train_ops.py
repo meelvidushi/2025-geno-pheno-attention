@@ -9,12 +9,12 @@ from torch.utils.data import DataLoader
 
 from analysis.base import ModelConfig, TrainConfig
 from analysis.dataset import create_dataloaders
-from analysis.piecewise_transformer import PiecewiseTransformer
+from analysis.modified_rijal_et_al import ModifiedRijalEtAl
 from analysis.rijal_et_al import RijalEtAl
 
 model_str_to_cls: dict[str, type[L.LightningModule]] = {
     "rijal_et_al": RijalEtAl,
-    "piecewise_transformer": PiecewiseTransformer,
+    "modified": ModifiedRijalEtAl,
 }
 
 

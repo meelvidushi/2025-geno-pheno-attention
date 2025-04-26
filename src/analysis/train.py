@@ -50,9 +50,14 @@ def run_trainings(
 
     if use_modal:
         paths = []
+        
+        # These jobs need to be run.
         filtered_jobs = []
 
-        for model_config, train_config in jobs_list:
+        # These are their indices in the original list.
+        filtered_indices = []
+
+        for idx, (model_config, train_config) in enumerate(jobs_list):
             existing_path = check_cached_model(train_config)
             if isinstance(existing_path, Path) and train_config.use_cache:
                 print(
@@ -61,11 +66,17 @@ def run_trainings(
                 )
                 paths.append(existing_path)
             else:
+                filtered_indices.append(idx)
                 filtered_jobs.append((model_config, train_config))
-                paths.append(train_config.expected_model_dir)
+
+                # We placeholder jobs with None
+                paths.append(None)
 
         if filtered_jobs:
-            train_models_with_modal(filtered_jobs)
+            # Slot the paths of models just ran into `paths`
+            new_paths = train_models_with_modal(filtered_jobs)
+            for idx, path in zip(filtered_indices, new_paths, strict=True):
+                paths[idx] = path
 
         return paths
     else:
