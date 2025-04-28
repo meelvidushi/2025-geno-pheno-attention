@@ -50,7 +50,7 @@ def run_trainings(
 
     if use_modal:
         paths = []
-        
+
         # These jobs need to be run.
         filtered_jobs = []
 

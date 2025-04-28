@@ -6,7 +6,7 @@ from analysis.base import BaseModel, ModelConfig, TrainConfig
 
 
 class _RijalEtAl(nn.Module):
-    def __init__(self, embedding_dim, seq_length, num_layers=3):
+    def __init__(self, embedding_dim, seq_length, num_layers=3, init_scale=0.03):
         """
         Implements a multi-layer attention mechanism.
 
@@ -21,6 +21,7 @@ class _RijalEtAl(nn.Module):
         self.key_dim = self.embedding_dim
         self.seq_length = seq_length
         self.num_layers = num_layers
+        self.init_scale = init_scale
 
         # Create learnable matrices for each layer
         self.query_matrices = nn.ParameterList(
@@ -46,8 +47,6 @@ class _RijalEtAl(nn.Module):
         self.init_parameters()
 
     def init_parameters(self):
-        init_scale = 0.03  # Small scale for initialization to prevent exploding gradients
-
         params = [
             *self.query_matrices,
             *self.key_matrices,
@@ -58,7 +57,7 @@ class _RijalEtAl(nn.Module):
         ]
 
         for param in params:
-            init.normal_(param, std=init_scale)
+            init.normal_(param, std=self.init_scale)
 
     def forward(self, one_hot_input: torch.Tensor):
         # Apply a random projection and concatenate it with the last feature, which
@@ -99,7 +98,7 @@ class RijalEtAl(BaseModel):
         self.save_hyperparameters()
 
         self.model_config = model_config
-        self.num_phenotypes = len(train_config.phenotypes)
+        self.num_phenotypes = train_config.num_phenotypes
 
         # This model only supports single phenotype prediction. It could be extended,
         # but I didn't want to risk changing the nature of this model in any way, since
@@ -110,6 +109,7 @@ class RijalEtAl(BaseModel):
             embedding_dim=model_config.embedding_dim,
             seq_length=model_config.seq_length,
             num_layers=model_config.num_layers,
+            init_scale=model_config.init_scale,
         )
 
     def forward(self, genotypes: torch.Tensor):

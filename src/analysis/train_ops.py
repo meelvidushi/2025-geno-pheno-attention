@@ -32,6 +32,7 @@ def train_model(model_config: ModelConfig, train_config: TrainConfig) -> Path:
         phenotypes=train_config.phenotypes,
         batch_size=train_config.batch_size,
         num_workers=train_config.num_workers,
+        synthetic=train_config.synthetic_data,
     )
 
     model_type = model_config.model_type

@@ -33,9 +33,17 @@ phenotype_names: list[str] = [
     "4NQO",
 ]
 
+phenotype_names_synthetic: list[str] = ["synth"]
+
 
 class GenoPhenoDataset(Dataset):
-    def __init__(self, genotype_path: Path, phenotype_path: Path, phenotypes: list[str]):
+    def __init__(
+        self,
+        genotype_path: Path,
+        phenotype_path: Path,
+        phenotypes: list[str],
+        synthetic: bool = False,
+    ):
         """Dataset for genotype-phenotype data
 
         Args:
@@ -44,7 +52,15 @@ class GenoPhenoDataset(Dataset):
             phenotypes: List of phenotype names to predict.
         """
         self.phenotypes_list = phenotypes
-        self._phenotype_indices = [phenotype_names.index(pheno) for pheno in self.phenotypes_list]
+
+        if synthetic:
+            # Synthetic phenotype data is unnamed, and has only one phenotype per
+            # genotype.
+            self._phenotype_indices = [0]
+        else:
+            self._phenotype_indices = [
+                phenotype_names.index(pheno) for pheno in self.phenotypes_list
+            ]
 
         self.genotypes = torch.from_numpy(np.load(genotype_path)).float()
         self.phenotypes_data = torch.from_numpy(np.load(phenotype_path)).float()
@@ -67,6 +83,7 @@ def create_dataloaders(
     batch_size: int,
     num_workers: int = 4,
     pin_memory: bool = True,
+    synthetic: bool = False,
 ) -> tuple[DataLoader, DataLoader, DataLoader]:
     """Create train, validation, and test dataloaders
 
@@ -84,18 +101,21 @@ def create_dataloaders(
         data_dir / GENO_TRAIN_PATHNAME,
         data_dir / PHENO_TRAIN_PATHNAME,
         phenotypes,
+        synthetic,
     )
 
     val_dataset = GenoPhenoDataset(
         data_dir / GENO_VAL_PATHNAME,
         data_dir / PHENO_VAL_PATHNAME,
         phenotypes,
+        synthetic,
     )
 
     test_dataset = GenoPhenoDataset(
         data_dir / GENO_TEST_PATHNAME,
         data_dir / PHENO_TEST_PATHNAME,
         phenotypes,
+        synthetic,
     )
 
     train_loader = DataLoader(

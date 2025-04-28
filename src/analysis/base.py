@@ -8,13 +8,15 @@ import torch.nn as nn
 import torchmetrics
 from torch.nn.utils import clip_grad_norm_
 
-from analysis.dataset import phenotype_names
+from analysis.dataset import phenotype_names, phenotype_names_synthetic
 
 
 @attrs.define
 class TrainConfig:
     # The data directory containing the train/validation/test datasets
     data_dir: Path = Path("./data")
+    # Is the data synthetic or real?
+    synthetic_data: bool = False
     # The root directory where models are saved
     save_dir: Path = Path("./models")
     # This name of the subdirectory for the trained model. If left empty, a timestamp
@@ -50,9 +52,17 @@ class TrainConfig:
     # Random seed for reproducibility. If None, a random seed will be chosen.
     seed: int | None = None
 
+    def __attrs_post_init__(self) -> None:
+        allowed_phenotypes = phenotype_names_synthetic if self.synthetic_data else phenotype_names
+        msg = (
+            f"With {self.synthetic_data=}, allowed phenotypes are {allowed_phenotypes}. "
+            f"You provided {self.phenotypes}."
+        )
+        assert all(pheno in allowed_phenotypes for pheno in self.phenotypes), msg
+
     @property
     def num_phenotypes(self) -> int:
-        return len(self.phenotypes)
+        return len(self.phenotypes) if not self.synthetic_data else 1
 
     @property
     def expected_model_dir(self) -> Path | None:
@@ -81,18 +91,15 @@ class ModelConfig:
     # The model type to train. One of {rijal_et_al, modified}.
     model_type: str = "rijal_et_al"
 
-    # These parameters are used by Rijal et al.
     seq_length: int = 1164
     embedding_dim: int = 13
     num_layers: int = 3
+    init_scale: float = 0.03
 
     # These parameters are used in our modified model.
     skip_connections: bool = False
     scaled_attention: bool = False
-    attention_bias: bool = False
     layer_norm: bool = False
-    dim_feedforward: int = 1024
-    nhead: int = 4
     dropout_rate: float = 0.0
 
 
@@ -220,7 +227,7 @@ class BaseModel(L.LightningModule, ABC):
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
             optimizer=optimizer,
             mode="min",
-            factor=0.5,
+            factor=0.75,
             patience=10,
             min_lr=1e-7,
         )

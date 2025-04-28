@@ -14,40 +14,40 @@ class _ModifiedRijalEtAl(nn.Module):
         seq_length: int,
         num_phenotypes: int = 1,
         num_layers: int = 3,
+        init_scale: float = 0.03,
         skip_connections: bool = False,
         scaled_attention: bool = False,
         layer_norm: bool = False,
         dropout_rate: float = 0.0,
-        attention_bias: bool = False,
     ):
         super().__init__()
         self.embedding_dim = embedding_dim
         self.seq_length = seq_length
         self.num_phenotypes = num_phenotypes
         self.num_layers = num_layers
+        self.init_scale = init_scale
         self.skip_connections = skip_connections
         self.scaled_attention = scaled_attention
         self.layer_norm = layer_norm
-        self.attention_bias = attention_bias
 
         self.locus_embeddings = nn.Embedding(seq_length, embedding_dim)  # (L, D)
         self.register_buffer("locus_indices", torch.arange(self.seq_length))
 
         self.q_linears = nn.ModuleList(
             [
-                nn.Linear(embedding_dim, embedding_dim, bias=self.attention_bias)
+                nn.Linear(embedding_dim, embedding_dim, bias=True)
                 for _ in range(num_layers)
             ]
         )
         self.k_linears = nn.ModuleList(
             [
-                nn.Linear(embedding_dim, embedding_dim, bias=self.attention_bias)
+                nn.Linear(embedding_dim, embedding_dim, bias=True)
                 for _ in range(num_layers)
             ]
         )
         self.v_linears = nn.ModuleList(
             [
-                nn.Linear(embedding_dim, embedding_dim, bias=self.attention_bias)
+                nn.Linear(embedding_dim, embedding_dim, bias=True)
                 for _ in range(num_layers)
             ]
         )
@@ -68,11 +68,11 @@ class _ModifiedRijalEtAl(nn.Module):
         self._reset_parameters()
 
     def _reset_parameters(self):
-        nn.init.normal_(self.locus_embeddings.weight, std=0.03)
+        nn.init.normal_(self.locus_embeddings.weight, std=self.init_scale)
         for q, k, v in zip(self.q_linears, self.k_linears, self.v_linears, strict=True):
-            nn.init.normal_(q.weight, std=0.03)
-            nn.init.normal_(k.weight, std=0.03)
-            nn.init.normal_(v.weight, std=0.03)
+            nn.init.normal_(q.weight, std=self.init_scale)
+            nn.init.normal_(k.weight, std=self.init_scale)
+            nn.init.normal_(v.weight, std=self.init_scale)
             if q.bias is not None:
                 nn.init.zeros_(q.bias)
                 nn.init.zeros_(k.bias)
@@ -91,6 +91,8 @@ class _ModifiedRijalEtAl(nn.Module):
         x = genotypes.unsqueeze(-1) * embeddings
 
         for i in range(self.num_layers):
+            residual = x
+
             # Pre-layer normalization.
             if self.layer_norm:
                 x_norm = self.norms[i](x)
@@ -107,10 +109,9 @@ class _ModifiedRijalEtAl(nn.Module):
             attn = F.softmax(scores, dim=-1)
 
             attn_out = torch.matmul(attn, v)  # (B, L, D)
-            attn_out = self.dropout(attn_out)
 
             if self.skip_connections and i > 0:
-                x = x + attn_out
+                x = residual + attn_out
             else:
                 x = attn_out
 
@@ -132,11 +133,11 @@ class ModifiedRijalEtAl(BaseModel):
             num_phenotypes=train_config.num_phenotypes,
             seq_length=model_config.seq_length,
             num_layers=model_config.num_layers,
+            init_scale=model_config.init_scale,
             layer_norm=model_config.layer_norm,
             skip_connections=model_config.skip_connections,
             scaled_attention=model_config.scaled_attention,
             dropout_rate=model_config.dropout_rate,
-            attention_bias=model_config.attention_bias,
         )
 
     def forward(self, genotypes: torch.Tensor):
