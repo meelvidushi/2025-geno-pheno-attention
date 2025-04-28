@@ -27,7 +27,7 @@ def check_cached_model(train_config: TrainConfig) -> Path | None:
 def run_training(model_config: ModelConfig, train_config: TrainConfig) -> Path:
     existing_path = check_cached_model(train_config)
     if isinstance(existing_path, Path) and train_config.use_cache:
-        print(f"Model with {train_config.name_prefix=} already found. Returning path to directory.")
+        print(f"Pre-trained model '{train_config.name_prefix}' found. Returning path.")
         return existing_path
 
     if train_config.use_modal:
@@ -60,10 +60,7 @@ def run_trainings(
         for idx, (model_config, train_config) in enumerate(jobs_list):
             existing_path = check_cached_model(train_config)
             if isinstance(existing_path, Path) and train_config.use_cache:
-                print(
-                    f"Model with {train_config.name_prefix=} already found. "
-                    f"Returning path to directory."
-                )
+                print(f"Pre-trained model '{train_config.name_prefix}' found. Returning path.")
                 paths.append(existing_path)
             else:
                 filtered_indices.append(idx)

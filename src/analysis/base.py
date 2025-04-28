@@ -166,7 +166,7 @@ class BaseModel(L.LightningModule, ABC):
         return dict(zip(metric_names, r2s, strict=True))
 
     def on_validation_epoch_end(self):
-        r2s = self.val_r2.compute() # (P,) or 1
+        r2s = self.val_r2.compute()  # (P,) or 1
         per_pheno_r2s = self._phenotype_r2_dict("val_r2", r2s)
 
         # Log the per phenotype R2s
@@ -178,7 +178,7 @@ class BaseModel(L.LightningModule, ABC):
         self.val_r2.reset()
 
     def on_test_epoch_end(self):
-        r2s = self.test_r2.compute() # (P,) or 1
+        r2s = self.test_r2.compute()  # (P,) or 1
         per_pheno_r2s = self._phenotype_r2_dict("test_r2", r2s)
 
         # Log the per phenotype R2s

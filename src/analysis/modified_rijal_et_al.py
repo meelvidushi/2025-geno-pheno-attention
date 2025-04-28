@@ -34,28 +34,17 @@ class _ModifiedRijalEtAl(nn.Module):
         self.register_buffer("locus_indices", torch.arange(self.seq_length))
 
         self.q_linears = nn.ModuleList(
-            [
-                nn.Linear(embedding_dim, embedding_dim, bias=True)
-                for _ in range(num_layers)
-            ]
+            [nn.Linear(embedding_dim, embedding_dim, bias=True) for _ in range(num_layers)]
         )
         self.k_linears = nn.ModuleList(
-            [
-                nn.Linear(embedding_dim, embedding_dim, bias=True)
-                for _ in range(num_layers)
-            ]
+            [nn.Linear(embedding_dim, embedding_dim, bias=True) for _ in range(num_layers)]
         )
         self.v_linears = nn.ModuleList(
-            [
-                nn.Linear(embedding_dim, embedding_dim, bias=True)
-                for _ in range(num_layers)
-            ]
+            [nn.Linear(embedding_dim, embedding_dim, bias=True) for _ in range(num_layers)]
         )
 
         if self.layer_norm:
-            self.norms = nn.ModuleList(
-                [nn.LayerNorm(embedding_dim) for _ in range(num_layers)]
-            )
+            self.norms = nn.ModuleList([nn.LayerNorm(embedding_dim) for _ in range(num_layers)])
 
         self.dropout = nn.Dropout(dropout_rate)
 
