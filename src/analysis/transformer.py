@@ -54,17 +54,19 @@ class _Transformer(nn.Module):
             norm=nn.LayerNorm(embedding_dim),
         )
 
+        self.fc_dropout = nn.Dropout(dropout_rate)
         self.fc_out = nn.Linear(embedding_dim, self.num_phenotypes)
 
     def forward(self, genotypes: torch.Tensor) -> torch.Tensor:
         embeddings = self.locus_embeddings(self.locus_indices)
+
         # (B, L, D) = (B, L, 1) * (L, D)
         x = genotypes.unsqueeze(-1) * embeddings
 
         encoder_output = self.transformer_encoder(src=x)
 
         pooled_output = encoder_output.mean(dim=1)
-        prediction = self.fc_out(pooled_output)
+        prediction = self.fc_out(self.fc_dropout(pooled_output))
 
         return prediction
 

@@ -49,7 +49,7 @@ class _ModifiedRijalEtAl(nn.Module):
         self.dropout = nn.Dropout(dropout_rate)
 
         self.readout = nn.Linear(
-            seq_length * embedding_dim,
+            embedding_dim,
             num_phenotypes,
             bias=True,
         )
@@ -104,8 +104,8 @@ class _ModifiedRijalEtAl(nn.Module):
             else:
                 x = attn_out
 
-        x = x.reshape(x.size(0), -1)  # (B, L*D)
-        phenotypes = self.readout(self.dropout(x))
+        pooled_output = x.mean(dim=1)
+        phenotypes = self.readout(self.dropout(pooled_output))
 
         return phenotypes
 
