@@ -102,6 +102,10 @@ class ModelConfig:
     layer_norm: bool = False
     dropout_rate: float = 0.0
 
+    # Transformer only
+    nhead: int = 4
+    dim_feedforward: int = 1048
+
 
 class BaseModel(L.LightningModule, ABC):
     """A base model class.

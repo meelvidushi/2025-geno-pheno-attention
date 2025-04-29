@@ -11,10 +11,12 @@ from analysis.base import ModelConfig, TrainConfig
 from analysis.dataset import create_dataloaders
 from analysis.modified_rijal_et_al import ModifiedRijalEtAl
 from analysis.rijal_et_al import RijalEtAl
+from analysis.transformer import Transformer
 
 model_str_to_cls: dict[str, type[L.LightningModule]] = {
     "rijal_et_al": RijalEtAl,
     "modified": ModifiedRijalEtAl,
+    "transformer": Transformer,
 }
 
 

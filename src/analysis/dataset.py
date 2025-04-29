@@ -33,7 +33,9 @@ phenotype_names: list[str] = [
     "4NQO",
 ]
 
-phenotype_names_synthetic: list[str] = ["synth"]
+phenotype_names_synthetic: list[str] = [
+    "synth",
+]
 
 
 class GenoPhenoDataset(Dataset):
