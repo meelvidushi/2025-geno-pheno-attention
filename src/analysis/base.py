@@ -32,8 +32,8 @@ class TrainConfig:
     batch_size: int = 64
     # The learning rate.
     learning_rate: float = 0.001
-    # If True, the learning rate is halved if no improvement in the validation loss is
-    # seen in 10 epochs.
+    # If True, the learning rate is multiplied by 0.75 if no improvement in the
+    # validation loss is seen in 5 epochs.
     lr_schedule: bool = False
     # Weight decay.
     weight_decay: float = 0.0
@@ -232,7 +232,7 @@ class BaseModel(L.LightningModule, ABC):
             optimizer=optimizer,
             mode="min",
             factor=0.75,
-            patience=10,
+            patience=5,
             min_lr=1e-7,
         )
 
