@@ -22,7 +22,7 @@ class _Transformer(nn.Module):
         embedding_dim: int = 256,
         nhead: int = 4,
         num_layers: int = 3,
-        dim_feedforward: int = 1048,
+        dim_feedforward: int = 1024,
         dropout_rate: float = 0.1,
         num_phenotypes: int = 1,
         seq_length: int = 1164,
