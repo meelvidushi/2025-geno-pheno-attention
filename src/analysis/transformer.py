@@ -55,7 +55,12 @@ class _Transformer(nn.Module):
         )
 
         self.fc_dropout = nn.Dropout(dropout_rate)
-        self.fc_out = nn.Linear(embedding_dim, self.num_phenotypes)
+
+        self.fc_out = nn.Linear(
+            embedding_dim,
+            num_phenotypes,
+            bias=True,
+        )
 
     def forward(self, genotypes: torch.Tensor) -> torch.Tensor:
         embeddings = self.locus_embeddings(self.locus_indices)
