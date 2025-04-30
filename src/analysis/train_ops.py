@@ -56,7 +56,7 @@ def train_model(model_config: ModelConfig, train_config: TrainConfig) -> Path:
     checkpoint_callback = ModelCheckpoint(
         save_top_k=1,
         monitor="val_loss",
-        mode="max",
+        mode="min",
         filename="best-{epoch:03d}-{val_loss:.4f}",
         verbose=True,
     )
