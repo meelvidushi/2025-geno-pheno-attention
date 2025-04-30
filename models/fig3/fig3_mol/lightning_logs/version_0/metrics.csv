@@ -1,0 +1,10 @@
+metric,value
+best_val_loss,0.37248745560646057
+final_val_loss,0.3875245153903961
+best_val_r2,0.6285144090652466
+final_val_r2,0.6135263442993164
+test_loss,0.3827001750469208
+test_r2,0.6126776933670044
+checkpoint_path,/data/models/fig3/fig3_mol/lightning_logs/version_0/checkpoints/best-epoch=113-val_loss=0.3725.ckpt
+best_val_r2_mol,0.6285144090652466
+test_r2_mol,0.6126776933670044
