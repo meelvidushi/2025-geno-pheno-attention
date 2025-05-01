@@ -1,9 +1,11 @@
 #!/usr/bin/env python
+import argparse
+import os
+
 import numpy as np
 import pandas as pd
-import os
-import argparse
 from tqdm import tqdm
+
 
 def convert_to_npy(input_file, output_file, chunksize=1000, dtype=np.float32):
     """
@@ -25,16 +27,16 @@ def convert_to_npy(input_file, output_file, chunksize=1000, dtype=np.float32):
     # Count total rows (this takes time but is necessary for pre-allocation)
     print("Counting rows in input file...")
     nrows = 0
-    with open(input_file, 'r') as f:
+    with open(input_file) as f:
         for _ in tqdm(f):
             nrows += 1
     print(f"File contains {nrows} rows")
 
     # Get number of columns from first row
     print("Determining number of columns...")
-    with open(input_file, 'r') as f:
+    with open(input_file) as f:
         first_line = f.readline()
-        ncols = len(first_line.strip().split('\t'))
+        ncols = len(first_line.strip().split("\t"))
     print(f"File contains {ncols} columns")
 
     # Calculate expected memory usage
@@ -44,9 +46,7 @@ def convert_to_npy(input_file, output_file, chunksize=1000, dtype=np.float32):
     # Create empty memory-mapped array (pre-allocate on disk)
     print("Creating memory-mapped output file...")
     output_shape = (nrows, ncols)
-    data_array = np.lib.format.open_memmap(
-        output_file, mode='w+', dtype=dtype, shape=output_shape
-    )
+    data_array = np.lib.format.open_memmap(output_file, mode="w+", dtype=dtype, shape=output_shape)
 
     # Process in chunks
     print(f"Processing file in chunks of {chunksize} rows...")
@@ -54,9 +54,7 @@ def convert_to_npy(input_file, output_file, chunksize=1000, dtype=np.float32):
         end = min(i + chunksize, nrows)
         # Read chunk from text file
         chunk = pd.read_csv(
-            input_file, sep='\t', header=None,
-            skiprows=i, nrows=end-i,
-            dtype=dtype, engine='c'
+            input_file, sep="\t", header=None, skiprows=i, nrows=end - i, dtype=dtype, engine="c"
         )
 
         # Write chunk to memory-mapped array
@@ -71,15 +69,22 @@ def convert_to_npy(input_file, output_file, chunksize=1000, dtype=np.float32):
     print(f"Conversion complete! Output saved to {output_file}")
     return True
 
+
 if __name__ == "__main__":
     # Set up argument parser
-    parser = argparse.ArgumentParser(description='Convert a large text file to NumPy format.')
-    parser.add_argument('--input', '-i', default="data/merged_geno_data.txt",
-                        help='Path to the input text file (tab-separated)')
-    parser.add_argument('--output', '-o', default="data/merged_geno_data.npy",
-                        help='Path to the output .npy file')
-    parser.add_argument('--chunksize', '-c', type=int, default=1000,
-                        help='Number of rows to process at once')
+    parser = argparse.ArgumentParser(description="Convert a large text file to NumPy format.")
+    parser.add_argument(
+        "--input",
+        "-i",
+        default="data/merged_geno_data.txt",
+        help="Path to the input text file (tab-separated)",
+    )
+    parser.add_argument(
+        "--output", "-o", default="data/merged_geno_data.npy", help="Path to the output .npy file"
+    )
+    parser.add_argument(
+        "--chunksize", "-c", type=int, default=1000, help="Number of rows to process at once"
+    )
 
     args = parser.parse_args()
 
