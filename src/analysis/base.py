@@ -15,8 +15,6 @@ from analysis.dataset import phenotype_names, phenotype_names_synthetic
 class TrainConfig:
     # The data directory containing the train/validation/test datasets
     data_dir: Path = Path("./data")
-    # Is the data synthetic or real?
-    synthetic_data: bool = False
     # The root directory where models are saved
     save_dir: Path = Path("./models")
     # This name of the subdirectory for the trained model. If left empty, a timestamp
@@ -51,6 +49,12 @@ class TrainConfig:
     modal_detach: bool = True
     # Random seed for reproducibility. If None, a random seed will be chosen.
     seed: int | None = None
+    # Is the data synthetic or real? If you happen to generate single phenotype data
+    # that matches the format of the real data, you can set this to True. Otherwise keep
+    # it False. This is a relic froma a half-baked idea, but we keep it since the
+    # pre-trained models in this repo have this flag stored, making it important for
+    # model checkpoint loading.
+    synthetic_data: bool = False
 
     def __attrs_post_init__(self) -> None:
         allowed_phenotypes = phenotype_names_synthetic if self.synthetic_data else phenotype_names
@@ -88,21 +92,24 @@ class TrainConfig:
 
 @attrs.define
 class ModelConfig:
-    # The model type to train. One of {rijal_et_al, modified}.
+    # The model type to train. One of {rijal_et_al, modified, transformer}.
     model_type: str = "rijal_et_al"
 
     seq_length: int = 1164
     embedding_dim: int = 13
     num_layers: int = 3
+
+    # The initial standard deviation of the model weights. Used only for "rijal_et_al"
+    # and "modified".
     init_scale: float = 0.03
 
-    # These parameters are used in our modified model.
+    # Used only for "modified".
     skip_connections: bool = False
     scaled_attention: bool = False
     layer_norm: bool = False
     dropout_rate: float = 0.0
 
-    # Transformer only
+    # Used only for "transformer"
     nhead: int = 4
     dim_feedforward: int = 1048
 
