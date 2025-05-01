@@ -1,0 +1,39 @@
+model_config: !!python/object:analysis.base.ModelConfig
+  dim_feedforward: 1048
+  dropout_rate: 0.0
+  embedding_dim: 13
+  init_scale: 0.03
+  layer_norm: false
+  model_type: rijal_et_al
+  nhead: 4
+  num_layers: 3
+  scaled_attention: false
+  seq_length: 1164
+  skip_connections: false
+train_config: !!python/object:analysis.base.TrainConfig
+  batch_size: 64
+  data_dir: !!python/object/apply:pathlib.PosixPath
+  - /
+  - data
+  - datasets
+  gradient_clip_val: 0
+  learning_rate: 0.001
+  lr_schedule: false
+  max_epochs: 200
+  modal_detach: true
+  name_prefix: fig3_suloc
+  num_workers: 1
+  optimizer: adam
+  patience: 200
+  phenotypes:
+  - suloc
+  save_dir: !!python/object/apply:pathlib.PosixPath
+  - /
+  - data
+  - models
+  - fig3
+  seed: null
+  synthetic_data: false
+  use_cache: true
+  use_modal: true
+  weight_decay: 0.0

@@ -26,8 +26,6 @@ website:
         href: index.ipynb
     - text: '{{< iconify nrk:back >}} Back to Pub'
       href: index.ipynb
-    - text: Demo
-      href: /examples/demo.html
     right:
     - text: FAQ
       href: pages/FAQ.qmd
@@ -71,7 +69,7 @@ format:
     - file: assets/mini-title.html
     - file: assets/version-in-title.html
     - file: assets/citation-box.html
-    css: 
+    css:
     - assets/css/main.css
     - assets/css/citation-box.css
     page-layout: article
@@ -80,7 +78,7 @@ format:
     toc-expand: 2
 comments:
   giscus:
-    repo: Arcadia-Science/notebook-pub-template
+    repo: Arcadia-Science/2025-geno-pheno-attention
     input-position: top
 reference-location: margin
 bibliography: ref.bib

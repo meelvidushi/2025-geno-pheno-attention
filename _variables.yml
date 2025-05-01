@@ -1,5 +1,5 @@
 pub:
   org: "Arcadia-Science"
-  repo: "notebook-pub-template"
-  title: "This is the title for the notebook pub template"
-  google_analytics_id: ""
+  repo: "2025-geno-pheno-attention"
+  title: "Cross-trait learning with a canonical transformer tops custom attention in genotype-phenotype mapping"
+  google_analytics_id: "G-XXZF3HXS3G"
