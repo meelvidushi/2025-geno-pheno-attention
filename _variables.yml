@@ -1,5 +1,5 @@
 pub:
   org: "Arcadia-Science"
   repo: "2025-geno-pheno-attention"
-  title: "Attention as usual: transformers elevate phenotype-genotype mapping"
+  title: "Cross-trait learning with a canonical transformer tops custom attention in genotype-phenotype mapping"
   google_analytics_id: "G-XXZF3HXS3G"
