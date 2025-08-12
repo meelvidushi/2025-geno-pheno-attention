@@ -1,0 +1,263 @@
+[rank: 0] Seed set to 3915996057
+/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/lightning/fabric/plugins/environments/slurm.py:204: The `srun` command is available on your system but is not used. HINT: If your intention is to run Lightning on SLURM, prepend your python command with `srun` like so: srun python src/analysis/train.py --train.phenotypes 30C ...
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+HPU available: False, using: 0 HPUs
+You are using a CUDA device ('NVIDIA L40S') that has Tensor Cores. To properly utilize them, you should set `torch.set_float32_matmul_precision('medium' | 'high')` which will trade-off precision for performance. For more details, read https://pytorch.org/docs/stable/generated/torch.set_float32_matmul_precision.html#torch.set_float32_matmul_precision
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+  | Name    | Type       | Params | Mode 
+-----------------------------------------------
+0 | loss_fn | MSELoss    | 0      | train
+1 | val_r2  | R2Score    | 0      | train
+2 | test_r2 | R2Score    | 0      | train
+3 | model   | _RijalEtAl | 30.6 K | train
+-----------------------------------------------
+30.6 K    Trainable params
+0         Non-trainable params
+30.6 K    Total params
+0.122     Total estimated model params size (MB)
+7         Modules in train mode
+0         Modules in eval mode
+/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/lightning/pytorch/trainer/connectors/data_connector.py:425: The 'val_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=7` in the `DataLoader` to improve performance.
+/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/lightning/pytorch/trainer/connectors/data_connector.py:425: The 'train_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=7` in the `DataLoader` to improve performance.
+Metric val_loss improved. New best score: 0.439
+Epoch 0, global step 1129: 'val_loss' reached 0.43916 (best 0.43916), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=000-val_loss=0.4392.ckpt' as top 1
+Metric val_loss improved by 0.012 >= min_delta = 0.0. New best score: 0.427
+Epoch 1, global step 2258: 'val_loss' reached 0.42735 (best 0.42735), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=001-val_loss=0.4274.ckpt' as top 1
+Metric val_loss improved by 0.003 >= min_delta = 0.0. New best score: 0.424
+Epoch 2, global step 3387: 'val_loss' reached 0.42415 (best 0.42415), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=002-val_loss=0.4242.ckpt' as top 1
+Metric val_loss improved by 0.000 >= min_delta = 0.0. New best score: 0.424
+Epoch 3, global step 4516: 'val_loss' reached 0.42383 (best 0.42383), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=003-val_loss=0.4238.ckpt' as top 1
+Metric val_loss improved by 0.001 >= min_delta = 0.0. New best score: 0.423
+Epoch 4, global step 5645: 'val_loss' reached 0.42326 (best 0.42326), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=004-val_loss=0.4233.ckpt' as top 1
+Epoch 5, global step 6774: 'val_loss' was not in top 1
+Metric val_loss improved by 0.000 >= min_delta = 0.0. New best score: 0.423
+Epoch 6, global step 7903: 'val_loss' reached 0.42304 (best 0.42304), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=006-val_loss=0.4230.ckpt' as top 1
+Epoch 7, global step 9032: 'val_loss' was not in top 1
+Epoch 8, global step 10161: 'val_loss' was not in top 1
+Epoch 9, global step 11290: 'val_loss' was not in top 1
+Metric val_loss improved by 0.004 >= min_delta = 0.0. New best score: 0.419
+Epoch 10, global step 12419: 'val_loss' reached 0.41923 (best 0.41923), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=010-val_loss=0.4192.ckpt' as top 1
+Epoch 11, global step 13548: 'val_loss' was not in top 1
+Epoch 12, global step 14677: 'val_loss' was not in top 1
+Epoch 13, global step 15806: 'val_loss' was not in top 1
+Epoch 14, global step 16935: 'val_loss' was not in top 1
+Epoch 15, global step 18064: 'val_loss' was not in top 1
+Metric val_loss improved by 0.001 >= min_delta = 0.0. New best score: 0.418
+Epoch 16, global step 19193: 'val_loss' reached 0.41835 (best 0.41835), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=016-val_loss=0.4183.ckpt' as top 1
+Epoch 17, global step 20322: 'val_loss' was not in top 1
+Epoch 18, global step 21451: 'val_loss' was not in top 1
+Epoch 19, global step 22580: 'val_loss' was not in top 1
+Epoch 20, global step 23709: 'val_loss' was not in top 1
+Epoch 21, global step 24838: 'val_loss' was not in top 1
+Metric val_loss improved by 0.001 >= min_delta = 0.0. New best score: 0.418
+Epoch 22, global step 25967: 'val_loss' reached 0.41759 (best 0.41759), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=022-val_loss=0.4176.ckpt' as top 1
+Epoch 23, global step 27096: 'val_loss' was not in top 1
+Epoch 24, global step 28225: 'val_loss' was not in top 1
+Epoch 25, global step 29354: 'val_loss' was not in top 1
+Epoch 26, global step 30483: 'val_loss' was not in top 1
+Metric val_loss improved by 0.000 >= min_delta = 0.0. New best score: 0.417
+Epoch 27, global step 31612: 'val_loss' reached 0.41719 (best 0.41719), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=027-val_loss=0.4172.ckpt' as top 1
+Epoch 28, global step 32741: 'val_loss' was not in top 1
+Epoch 29, global step 33870: 'val_loss' was not in top 1
+Epoch 30, global step 34999: 'val_loss' was not in top 1
+Epoch 31, global step 36128: 'val_loss' was not in top 1
+Metric val_loss improved by 0.003 >= min_delta = 0.0. New best score: 0.414
+Epoch 32, global step 37257: 'val_loss' reached 0.41424 (best 0.41424), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=032-val_loss=0.4142.ckpt' as top 1
+Epoch 33, global step 38386: 'val_loss' was not in top 1
+Epoch 34, global step 39515: 'val_loss' was not in top 1
+Metric val_loss improved by 0.000 >= min_delta = 0.0. New best score: 0.414
+Epoch 35, global step 40644: 'val_loss' reached 0.41381 (best 0.41381), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=035-val_loss=0.4138.ckpt' as top 1
+Epoch 36, global step 41773: 'val_loss' was not in top 1
+Epoch 37, global step 42902: 'val_loss' was not in top 1
+Metric val_loss improved by 0.003 >= min_delta = 0.0. New best score: 0.411
+Epoch 38, global step 44031: 'val_loss' reached 0.41079 (best 0.41079), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=038-val_loss=0.4108.ckpt' as top 1
+Epoch 39, global step 45160: 'val_loss' was not in top 1
+Epoch 40, global step 46289: 'val_loss' was not in top 1
+Epoch 41, global step 47418: 'val_loss' was not in top 1
+Epoch 42, global step 48547: 'val_loss' was not in top 1
+Epoch 43, global step 49676: 'val_loss' was not in top 1
+Epoch 44, global step 50805: 'val_loss' was not in top 1
+Epoch 45, global step 51934: 'val_loss' was not in top 1
+Metric val_loss improved by 0.001 >= min_delta = 0.0. New best score: 0.410
+Epoch 46, global step 53063: 'val_loss' reached 0.40954 (best 0.40954), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=046-val_loss=0.4095.ckpt' as top 1
+Epoch 47, global step 54192: 'val_loss' was not in top 1
+Metric val_loss improved by 0.000 >= min_delta = 0.0. New best score: 0.409
+Epoch 48, global step 55321: 'val_loss' reached 0.40945 (best 0.40945), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=048-val_loss=0.4095.ckpt' as top 1
+Epoch 49, global step 56450: 'val_loss' was not in top 1
+Metric val_loss improved by 0.000 >= min_delta = 0.0. New best score: 0.409
+Epoch 50, global step 57579: 'val_loss' reached 0.40920 (best 0.40920), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=050-val_loss=0.4092.ckpt' as top 1
+Epoch 51, global step 58708: 'val_loss' was not in top 1
+Epoch 52, global step 59837: 'val_loss' was not in top 1
+Epoch 53, global step 60966: 'val_loss' was not in top 1
+Epoch 54, global step 62095: 'val_loss' was not in top 1
+Epoch 55, global step 63224: 'val_loss' was not in top 1
+Epoch 56, global step 64353: 'val_loss' was not in top 1
+Metric val_loss improved by 0.001 >= min_delta = 0.0. New best score: 0.408
+Epoch 57, global step 65482: 'val_loss' reached 0.40831 (best 0.40831), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=057-val_loss=0.4083.ckpt' as top 1
+Epoch 58, global step 66611: 'val_loss' was not in top 1
+Epoch 59, global step 67740: 'val_loss' was not in top 1
+Epoch 60, global step 68869: 'val_loss' was not in top 1
+Epoch 61, global step 69998: 'val_loss' was not in top 1
+Metric val_loss improved by 0.002 >= min_delta = 0.0. New best score: 0.406
+Epoch 62, global step 71127: 'val_loss' reached 0.40628 (best 0.40628), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=062-val_loss=0.4063.ckpt' as top 1
+Epoch 63, global step 72256: 'val_loss' was not in top 1
+Epoch 64, global step 73385: 'val_loss' was not in top 1
+Epoch 65, global step 74514: 'val_loss' was not in top 1
+Metric val_loss improved by 0.000 >= min_delta = 0.0. New best score: 0.406
+Epoch 66, global step 75643: 'val_loss' reached 0.40613 (best 0.40613), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=066-val_loss=0.4061.ckpt' as top 1
+Epoch 67, global step 76772: 'val_loss' was not in top 1
+Epoch 68, global step 77901: 'val_loss' was not in top 1
+Metric val_loss improved by 0.000 >= min_delta = 0.0. New best score: 0.406
+Epoch 69, global step 79030: 'val_loss' reached 0.40607 (best 0.40607), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=069-val_loss=0.4061.ckpt' as top 1
+Epoch 70, global step 80159: 'val_loss' was not in top 1
+Epoch 71, global step 81288: 'val_loss' was not in top 1
+Epoch 72, global step 82417: 'val_loss' was not in top 1
+Epoch 73, global step 83546: 'val_loss' was not in top 1
+Epoch 74, global step 84675: 'val_loss' was not in top 1
+Epoch 75, global step 85804: 'val_loss' was not in top 1
+Epoch 76, global step 86933: 'val_loss' was not in top 1
+Epoch 77, global step 88062: 'val_loss' was not in top 1
+Metric val_loss improved by 0.001 >= min_delta = 0.0. New best score: 0.405
+Epoch 78, global step 89191: 'val_loss' reached 0.40478 (best 0.40478), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=078-val_loss=0.4048.ckpt' as top 1
+Epoch 79, global step 90320: 'val_loss' was not in top 1
+Epoch 80, global step 91449: 'val_loss' was not in top 1
+Epoch 81, global step 92578: 'val_loss' was not in top 1
+Epoch 82, global step 93707: 'val_loss' was not in top 1
+Metric val_loss improved by 0.000 >= min_delta = 0.0. New best score: 0.404
+Epoch 83, global step 94836: 'val_loss' reached 0.40440 (best 0.40440), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=083-val_loss=0.4044.ckpt' as top 1
+Epoch 84, global step 95965: 'val_loss' was not in top 1
+Epoch 85, global step 97094: 'val_loss' was not in top 1
+Metric val_loss improved by 0.001 >= min_delta = 0.0. New best score: 0.404
+Epoch 86, global step 98223: 'val_loss' reached 0.40356 (best 0.40356), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=086-val_loss=0.4036.ckpt' as top 1
+Epoch 87, global step 99352: 'val_loss' was not in top 1
+Epoch 88, global step 100481: 'val_loss' was not in top 1
+Epoch 89, global step 101610: 'val_loss' was not in top 1
+Epoch 90, global step 102739: 'val_loss' was not in top 1
+Metric val_loss improved by 0.000 >= min_delta = 0.0. New best score: 0.404
+Epoch 91, global step 103868: 'val_loss' reached 0.40352 (best 0.40352), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=091-val_loss=0.4035.ckpt' as top 1
+Epoch 92, global step 104997: 'val_loss' was not in top 1
+Metric val_loss improved by 0.001 >= min_delta = 0.0. New best score: 0.403
+Epoch 93, global step 106126: 'val_loss' reached 0.40266 (best 0.40266), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=093-val_loss=0.4027.ckpt' as top 1
+Epoch 94, global step 107255: 'val_loss' was not in top 1
+Epoch 95, global step 108384: 'val_loss' was not in top 1
+Epoch 96, global step 109513: 'val_loss' was not in top 1
+Epoch 97, global step 110642: 'val_loss' was not in top 1
+Epoch 98, global step 111771: 'val_loss' was not in top 1
+Metric val_loss improved by 0.001 >= min_delta = 0.0. New best score: 0.401
+Epoch 99, global step 112900: 'val_loss' reached 0.40143 (best 0.40143), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=099-val_loss=0.4014.ckpt' as top 1
+Epoch 100, global step 114029: 'val_loss' was not in top 1
+Epoch 101, global step 115158: 'val_loss' was not in top 1
+Metric val_loss improved by 0.002 >= min_delta = 0.0. New best score: 0.400
+Epoch 102, global step 116287: 'val_loss' reached 0.39987 (best 0.39987), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=102-val_loss=0.3999.ckpt' as top 1
+Epoch 103, global step 117416: 'val_loss' was not in top 1
+Epoch 104, global step 118545: 'val_loss' was not in top 1
+Epoch 105, global step 119674: 'val_loss' was not in top 1
+Epoch 106, global step 120803: 'val_loss' was not in top 1
+Epoch 107, global step 121932: 'val_loss' was not in top 1
+Epoch 108, global step 123061: 'val_loss' was not in top 1
+Epoch 109, global step 124190: 'val_loss' was not in top 1
+Metric val_loss improved by 0.002 >= min_delta = 0.0. New best score: 0.398
+Epoch 110, global step 125319: 'val_loss' reached 0.39789 (best 0.39789), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=110-val_loss=0.3979.ckpt' as top 1
+Epoch 111, global step 126448: 'val_loss' was not in top 1
+Metric val_loss improved by 0.002 >= min_delta = 0.0. New best score: 0.396
+Epoch 112, global step 127577: 'val_loss' reached 0.39598 (best 0.39598), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=112-val_loss=0.3960.ckpt' as top 1
+Epoch 113, global step 128706: 'val_loss' was not in top 1
+Metric val_loss improved by 0.001 >= min_delta = 0.0. New best score: 0.395
+Epoch 114, global step 129835: 'val_loss' reached 0.39542 (best 0.39542), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=114-val_loss=0.3954.ckpt' as top 1
+Epoch 115, global step 130964: 'val_loss' was not in top 1
+Epoch 116, global step 132093: 'val_loss' was not in top 1
+Epoch 117, global step 133222: 'val_loss' was not in top 1
+Epoch 118, global step 134351: 'val_loss' was not in top 1
+Epoch 119, global step 135480: 'val_loss' was not in top 1
+Epoch 120, global step 136609: 'val_loss' was not in top 1
+Epoch 121, global step 137738: 'val_loss' was not in top 1
+Epoch 122, global step 138867: 'val_loss' was not in top 1
+Metric val_loss improved by 0.001 >= min_delta = 0.0. New best score: 0.394
+Epoch 123, global step 139996: 'val_loss' reached 0.39429 (best 0.39429), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=123-val_loss=0.3943.ckpt' as top 1
+Epoch 124, global step 141125: 'val_loss' was not in top 1
+Epoch 125, global step 142254: 'val_loss' was not in top 1
+Metric val_loss improved by 0.001 >= min_delta = 0.0. New best score: 0.393
+Epoch 126, global step 143383: 'val_loss' reached 0.39349 (best 0.39349), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=126-val_loss=0.3935.ckpt' as top 1
+Epoch 127, global step 144512: 'val_loss' was not in top 1
+Epoch 128, global step 145641: 'val_loss' was not in top 1
+Epoch 129, global step 146770: 'val_loss' was not in top 1
+Epoch 130, global step 147899: 'val_loss' was not in top 1
+Epoch 131, global step 149028: 'val_loss' was not in top 1
+Epoch 132, global step 150157: 'val_loss' was not in top 1
+Epoch 133, global step 151286: 'val_loss' was not in top 1
+Epoch 134, global step 152415: 'val_loss' was not in top 1
+Epoch 135, global step 153544: 'val_loss' was not in top 1
+Epoch 136, global step 154673: 'val_loss' was not in top 1
+Metric val_loss improved by 0.003 >= min_delta = 0.0. New best score: 0.391
+Epoch 137, global step 155802: 'val_loss' reached 0.39073 (best 0.39073), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=137-val_loss=0.3907.ckpt' as top 1
+Epoch 138, global step 156931: 'val_loss' was not in top 1
+Epoch 139, global step 158060: 'val_loss' was not in top 1
+Epoch 140, global step 159189: 'val_loss' was not in top 1
+Epoch 141, global step 160318: 'val_loss' was not in top 1
+Epoch 142, global step 161447: 'val_loss' was not in top 1
+Epoch 143, global step 162576: 'val_loss' was not in top 1
+Epoch 144, global step 163705: 'val_loss' was not in top 1
+Epoch 145, global step 164834: 'val_loss' was not in top 1
+Epoch 146, global step 165963: 'val_loss' was not in top 1
+Epoch 147, global step 167092: 'val_loss' was not in top 1
+Epoch 148, global step 168221: 'val_loss' was not in top 1
+Epoch 149, global step 169350: 'val_loss' was not in top 1
+Epoch 150, global step 170479: 'val_loss' was not in top 1
+Epoch 151, global step 171608: 'val_loss' was not in top 1
+Epoch 152, global step 172737: 'val_loss' was not in top 1
+Epoch 153, global step 173866: 'val_loss' was not in top 1
+Epoch 154, global step 174995: 'val_loss' was not in top 1
+Epoch 155, global step 176124: 'val_loss' was not in top 1
+Metric val_loss improved by 0.000 >= min_delta = 0.0. New best score: 0.391
+Epoch 156, global step 177253: 'val_loss' reached 0.39066 (best 0.39066), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=156-val_loss=0.3907.ckpt' as top 1
+Epoch 157, global step 178382: 'val_loss' was not in top 1
+Epoch 158, global step 179511: 'val_loss' was not in top 1
+Epoch 159, global step 180640: 'val_loss' was not in top 1
+Metric val_loss improved by 0.000 >= min_delta = 0.0. New best score: 0.390
+Epoch 160, global step 181769: 'val_loss' reached 0.39032 (best 0.39032), saving model to 'models/20250716_215606/lightning_logs/version_1507291/checkpoints/best-epoch=160-val_loss=0.3903.ckpt' as top 1
+Epoch 161, global step 182898: 'val_loss' was not in top 1
+Epoch 162, global step 184027: 'val_loss' was not in top 1
+Epoch 163, global step 185156: 'val_loss' was not in top 1
+Epoch 164, global step 186285: 'val_loss' was not in top 1
+Epoch 165, global step 187414: 'val_loss' was not in top 1
+Epoch 166, global step 188543: 'val_loss' was not in top 1
+Epoch 167, global step 189672: 'val_loss' was not in top 1
+Epoch 168, global step 190801: 'val_loss' was not in top 1
+Epoch 169, global step 191930: 'val_loss' was not in top 1
+Epoch 170, global step 193059: 'val_loss' was not in top 1
+Epoch 171, global step 194188: 'val_loss' was not in top 1
+Epoch 172, global step 195317: 'val_loss' was not in top 1
+Epoch 173, global step 196446: 'val_loss' was not in top 1
+Epoch 174, global step 197575: 'val_loss' was not in top 1
+Epoch 175, global step 198704: 'val_loss' was not in top 1
+Epoch 176, global step 199833: 'val_loss' was not in top 1
+Epoch 177, global step 200962: 'val_loss' was not in top 1
+Epoch 178, global step 202091: 'val_loss' was not in top 1
+Epoch 179, global step 203220: 'val_loss' was not in top 1
+Epoch 180, global step 204349: 'val_loss' was not in top 1
+Epoch 181, global step 205478: 'val_loss' was not in top 1
+Epoch 182, global step 206607: 'val_loss' was not in top 1
+Epoch 183, global step 207736: 'val_loss' was not in top 1
+Epoch 184, global step 208865: 'val_loss' was not in top 1
+Epoch 185, global step 209994: 'val_loss' was not in top 1
+Epoch 186, global step 211123: 'val_loss' was not in top 1
+Epoch 187, global step 212252: 'val_loss' was not in top 1
+Epoch 188, global step 213381: 'val_loss' was not in top 1
+Epoch 189, global step 214510: 'val_loss' was not in top 1
+Epoch 190, global step 215639: 'val_loss' was not in top 1
+Epoch 191, global step 216768: 'val_loss' was not in top 1
+Epoch 192, global step 217897: 'val_loss' was not in top 1
+Epoch 193, global step 219026: 'val_loss' was not in top 1
+Epoch 194, global step 220155: 'val_loss' was not in top 1
+Epoch 195, global step 221284: 'val_loss' was not in top 1
+Epoch 196, global step 222413: 'val_loss' was not in top 1
+Epoch 197, global step 223542: 'val_loss' was not in top 1
+Epoch 198, global step 224671: 'val_loss' was not in top 1
+Epoch 199, global step 225800: 'val_loss' was not in top 1
+`Trainer.fit` stopped: `max_epochs=200` reached.
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/lightning/pytorch/trainer/connectors/data_connector.py:425: The 'test_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=7` in the `DataLoader` to improve performance.

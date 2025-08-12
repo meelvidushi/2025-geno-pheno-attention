@@ -1,0 +1,14 @@
+[rank: 0] Seed set to 538568927
+Traceback (most recent call last):
+  File "/home/vmeel/2025-geno-pheno-attention/src/analysis/train.py", line 88, in <module>
+    run_training(config.model, config.train)
+  File "/home/vmeel/2025-geno-pheno-attention/src/analysis/train.py", line 36, in run_training
+    local_path = train_model(model_config, train_config)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vmeel/2025-geno-pheno-attention/src/analysis/train_ops.py", line 47, in train_model
+    model = model_cls(model_config, train_config)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vmeel/2025-geno-pheno-attention/src/analysis/rijal_et_al.py", line 106, in __init__
+    assert self.num_phenotypes == 1, "RijalEtAl only supports predicting a single phenotype"
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: RijalEtAl only supports predicting a single phenotype
