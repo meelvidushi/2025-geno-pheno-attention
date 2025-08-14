@@ -1,0 +1,89 @@
+Loading miniconda3/25.1.1/24g7bpu
+  Loading requirement: gcc-runtime/13.2.0/s3f7i6x
+[rank: 0] Seed set to 3602768795
+/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/torch/nn/modules/transformer.py:286: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(f"enable_nested_tensor is True, but self.use_nested_tensor is False because {why_not_sparsity_fast_path}")
+/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/lightning/fabric/plugins/environments/slurm.py:204: The `srun` command is available on your system but is not used. HINT: If your intention is to run Lightning on SLURM, prepend your python command with `srun` like so: srun python src/analysis/train.py --model.model_type transformer ...
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+HPU available: False, using: 0 HPUs
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+Loading `train_dataloader` to estimate number of stepping batches.
+/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/lightning/pytorch/trainer/connectors/data_connector.py:425: The 'train_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=7` in the `DataLoader` to improve performance.
+
+  | Name    | Type         | Params | Mode 
+-------------------------------------------------
+0 | loss_fn | MSELoss      | 0      | train
+1 | val_r2  | R2Score      | 0      | train
+2 | test_r2 | R2Score      | 0      | train
+3 | model   | _Transformer | 3.8 M  | train
+-------------------------------------------------
+3.8 M     Trainable params
+0         Non-trainable params
+3.8 M     Total params
+15.084    Total estimated model params size (MB)
+51        Modules in train mode
+0         Modules in eval mode
+/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/lightning/pytorch/trainer/connectors/data_connector.py:425: The 'val_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=7` in the `DataLoader` to improve performance.
+Traceback (most recent call last):
+  File "/home/vmeel/2025-geno-pheno-attention/src/analysis/train.py", line 90, in <module>
+    run_training(config.model, config.train)
+  File "/home/vmeel/2025-geno-pheno-attention/src/analysis/train.py", line 38, in run_training
+    local_path = train_model(model_config, train_config)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vmeel/2025-geno-pheno-attention/src/analysis/train_ops.py", line 84, in train_model
+    trainer.fit(model, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader)
+  File "/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/lightning/pytorch/trainer/trainer.py", line 561, in fit
+    call._call_and_handle_interrupt(
+  File "/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/lightning/pytorch/trainer/call.py", line 48, in _call_and_handle_interrupt
+    return trainer_fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/lightning/pytorch/trainer/trainer.py", line 599, in _fit_impl
+    self._run(model, ckpt_path=ckpt_path)
+  File "/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/lightning/pytorch/trainer/trainer.py", line 1012, in _run
+    results = self._run_stage()
+              ^^^^^^^^^^^^^^^^^
+  File "/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/lightning/pytorch/trainer/trainer.py", line 1054, in _run_stage
+    self._run_sanity_check()
+  File "/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/lightning/pytorch/trainer/trainer.py", line 1083, in _run_sanity_check
+    val_loop.run()
+  File "/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/lightning/pytorch/loops/utilities.py", line 179, in _decorator
+    return loop_run(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/lightning/pytorch/loops/evaluation_loop.py", line 145, in run
+    self._evaluation_step(batch, batch_idx, dataloader_idx, dataloader_iter)
+  File "/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/lightning/pytorch/loops/evaluation_loop.py", line 437, in _evaluation_step
+    output = call._call_strategy_hook(trainer, hook_name, *step_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/lightning/pytorch/trainer/call.py", line 328, in _call_strategy_hook
+    output = fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^
+  File "/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/lightning/pytorch/strategies/strategy.py", line 412, in validation_step
+    return self.lightning_module.validation_step(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vmeel/2025-geno-pheno-attention/src/analysis/base.py", line 175, in validation_step
+    self._step(batch, "val")
+  File "/home/vmeel/2025-geno-pheno-attention/src/analysis/base.py", line 160, in _step
+    preds = self(genotypes)  # Expected shape: (B, P)
+            ^^^^^^^^^^^^^^^
+  File "/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1511, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1520, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vmeel/2025-geno-pheno-attention/src/analysis/transformer.py", line 99, in forward
+    return self.model(genotypes)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1511, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1520, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vmeel/2025-geno-pheno-attention/src/analysis/transformer.py", line 65, in forward
+    embeddings = self.locus_embeddings(self.locus_indices)  # (L, D)
+                 ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1688, in __getattr__
+    raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
+AttributeError: '_Transformer' object has no attribute 'locus_embeddings'

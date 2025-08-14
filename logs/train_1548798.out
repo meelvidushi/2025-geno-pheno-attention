@@ -1,0 +1,78 @@
+Starting training job... Check tensorboard server for progress.
+Model Config:
+╭─ <class 'analysis.base.ModelConfig'> ─╮
+│ ╭───────────────────────────────────╮ │
+│ │ ModelConfig(                      │ │
+│ │ │   model_type='transformer',     │ │
+│ │ │   seq_length=1164,              │ │
+│ │ │   embedding_dim=13,             │ │
+│ │ │   num_layers=3,                 │ │
+│ │ │   init_scale=0.03,              │ │
+│ │ │   skip_connections=False,       │ │
+│ │ │   scaled_attention=False,       │ │
+│ │ │   layer_norm=False,             │ │
+│ │ │   dropout_rate=0.0,             │ │
+│ │ │   nhead=4,                      │ │
+│ │ │   dim_feedforward=1048          │ │
+│ │ )                                 │ │
+│ ╰───────────────────────────────────╯ │
+│                                       │
+│  dim_feedforward = 1048               │
+│     dropout_rate = 0.0                │
+│    embedding_dim = 13                 │
+│       init_scale = 0.03               │
+│       layer_norm = False              │
+│       model_type = 'transformer'      │
+│            nhead = 4                  │
+│       num_layers = 3                  │
+│ scaled_attention = False              │
+│       seq_length = 1164               │
+│ skip_connections = False              │
+╰───────────────────────────────────────╯
+
+Train Config:
+╭──────────────── <class 'analysis.base.TrainConfig'> ─────────────────╮
+│ ╭──────────────────────────────────────────────────────────────────╮ │
+│ │ TrainConfig(                                                     │ │
+│ │ │   data_dir=PosixPath('data'),                                  │ │
+│ │ │   save_dir=PosixPath('models'),                                │ │
+│ │ │   name_prefix='decoder_test',                                  │ │
+│ │ │   phenotypes=['30C'],                                          │ │
+│ │ │   optimizer='adam',                                            │ │
+│ │ │   patience=10,                                                 │ │
+│ │ │   batch_size=64,                                               │ │
+│ │ │   learning_rate=0.001,                                         │ │
+│ │ │   lr_schedule=False,                                           │ │
+│ │ │   weight_decay=0.0,                                            │ │
+│ │ │   max_epochs=50,                                               │ │
+│ │ │   num_workers=1,                                               │ │
+│ │ │   gradient_clip_val=0.0,                                       │ │
+│ │ │   use_cache=True,                                              │ │
+│ │ │   use_modal=True,                                              │ │
+│ │ │   modal_detach=True,                                           │ │
+│ │ │   seed=None,                                                   │ │
+│ │ │   synthetic_data=False                                         │ │
+│ │ )                                                                │ │
+│ ╰──────────────────────────────────────────────────────────────────╯ │
+│                                                                      │
+│         batch_size = 64                                              │
+│           data_dir = PosixPath('data')                               │
+│ expected_model_dir = PosixPath('models/decoder_test/lightning_logs') │
+│  gradient_clip_val = 0.0                                             │
+│      learning_rate = 0.001                                           │
+│        lr_schedule = False                                           │
+│         max_epochs = 50                                              │
+│       modal_detach = True                                            │
+│        name_prefix = 'decoder_test'                                  │
+│     num_phenotypes = 1                                               │
+│        num_workers = 1                                               │
+│          optimizer = 'adam'                                          │
+│           patience = 10                                              │
+│         phenotypes = ['30C']                                         │
+│           save_dir = PosixPath('models')                             │
+│               seed = None                                            │
+│     synthetic_data = False                                           │
+│          use_cache = True                                            │
+│          use_modal = True                                            │
+│       weight_decay = 0.0                                             │
+╰──────────────────────────────────────────────────────────────────────╯

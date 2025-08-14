@@ -11,6 +11,8 @@ from analysis.modal_infrastructure import (
 )
 from analysis.train_ops import train_model
 
+from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint, LearningRateMonitor
+
 
 @attrs.define
 class CLIArgs:

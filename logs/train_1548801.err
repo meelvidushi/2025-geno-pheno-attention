@@ -1,0 +1,80 @@
+Loading miniconda3/25.1.1/24g7bpu
+  Loading requirement: gcc-runtime/13.2.0/s3f7i6x
+[rank: 0] Seed set to 3934758050
+/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/torch/nn/modules/transformer.py:286: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(f"enable_nested_tensor is True, but self.use_nested_tensor is False because {why_not_sparsity_fast_path}")
+/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/lightning/fabric/plugins/environments/slurm.py:204: The `srun` command is available on your system but is not used. HINT: If your intention is to run Lightning on SLURM, prepend your python command with `srun` like so: srun python src/analysis/train.py --model.model_type transformer ...
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+HPU available: False, using: 0 HPUs
+You are using a CUDA device ('NVIDIA A100-SXM4-80GB') that has Tensor Cores. To properly utilize them, you should set `torch.set_float32_matmul_precision('medium' | 'high')` which will trade-off precision for performance. For more details, read https://pytorch.org/docs/stable/generated/torch.set_float32_matmul_precision.html#torch.set_float32_matmul_precision
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+  | Name    | Type         | Params | Mode 
+-------------------------------------------------
+0 | loss_fn | MSELoss      | 0      | train
+1 | val_r2  | R2Score      | 0      | train
+2 | test_r2 | R2Score      | 0      | train
+3 | model   | _Transformer | 1.2 M  | train
+-------------------------------------------------
+1.2 M     Trainable params
+0         Non-trainable params
+1.2 M     Total params
+4.896     Total estimated model params size (MB)
+42        Modules in train mode
+0         Modules in eval mode
+/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/lightning/pytorch/trainer/connectors/data_connector.py:425: The 'val_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=7` in the `DataLoader` to improve performance.
+/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/lightning/pytorch/trainer/connectors/data_connector.py:425: The 'train_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=7` in the `DataLoader` to improve performance.
+Metric val_loss improved. New best score: 0.464
+Epoch 0, global step 1129: 'val_loss' reached 0.46403 (best 0.46403), saving model to 'models/decoder_test/lightning_logs/version_1548801/checkpoints/best-epoch=000-val_loss=0.4640.ckpt' as top 1
+Epoch 1, global step 2258: 'val_loss' was not in top 1
+Metric val_loss improved by 0.016 >= min_delta = 0.0. New best score: 0.448
+Epoch 2, global step 3387: 'val_loss' reached 0.44780 (best 0.44780), saving model to 'models/decoder_test/lightning_logs/version_1548801/checkpoints/best-epoch=002-val_loss=0.4478.ckpt' as top 1
+Metric val_loss improved by 0.003 >= min_delta = 0.0. New best score: 0.445
+Epoch 3, global step 4516: 'val_loss' reached 0.44494 (best 0.44494), saving model to 'models/decoder_test/lightning_logs/version_1548801/checkpoints/best-epoch=003-val_loss=0.4449.ckpt' as top 1
+Epoch 4, global step 5645: 'val_loss' was not in top 1
+Metric val_loss improved by 0.010 >= min_delta = 0.0. New best score: 0.434
+Epoch 5, global step 6774: 'val_loss' reached 0.43446 (best 0.43446), saving model to 'models/decoder_test/lightning_logs/version_1548801/checkpoints/best-epoch=005-val_loss=0.4345.ckpt' as top 1
+Epoch 6, global step 7903: 'val_loss' was not in top 1
+Epoch 7, global step 9032: 'val_loss' was not in top 1
+Metric val_loss improved by 0.004 >= min_delta = 0.0. New best score: 0.430
+Epoch 8, global step 10161: 'val_loss' reached 0.43038 (best 0.43038), saving model to 'models/decoder_test/lightning_logs/version_1548801/checkpoints/best-epoch=008-val_loss=0.4304.ckpt' as top 1
+Epoch 9, global step 11290: 'val_loss' was not in top 1
+Metric val_loss improved by 0.001 >= min_delta = 0.0. New best score: 0.429
+Epoch 10, global step 12419: 'val_loss' reached 0.42921 (best 0.42921), saving model to 'models/decoder_test/lightning_logs/version_1548801/checkpoints/best-epoch=010-val_loss=0.4292.ckpt' as top 1
+Epoch 11, global step 13548: 'val_loss' was not in top 1
+Epoch 12, global step 14677: 'val_loss' was not in top 1
+Epoch 13, global step 15806: 'val_loss' was not in top 1
+Epoch 14, global step 16935: 'val_loss' was not in top 1
+Metric val_loss improved by 0.002 >= min_delta = 0.0. New best score: 0.427
+Epoch 15, global step 18064: 'val_loss' reached 0.42688 (best 0.42688), saving model to 'models/decoder_test/lightning_logs/version_1548801/checkpoints/best-epoch=015-val_loss=0.4269.ckpt' as top 1
+Epoch 16, global step 19193: 'val_loss' was not in top 1
+Metric val_loss improved by 0.003 >= min_delta = 0.0. New best score: 0.423
+Epoch 17, global step 20322: 'val_loss' reached 0.42340 (best 0.42340), saving model to 'models/decoder_test/lightning_logs/version_1548801/checkpoints/best-epoch=017-val_loss=0.4234.ckpt' as top 1
+Epoch 18, global step 21451: 'val_loss' was not in top 1
+Metric val_loss improved by 0.005 >= min_delta = 0.0. New best score: 0.419
+Epoch 19, global step 22580: 'val_loss' reached 0.41851 (best 0.41851), saving model to 'models/decoder_test/lightning_logs/version_1548801/checkpoints/best-epoch=019-val_loss=0.4185.ckpt' as top 1
+Epoch 20, global step 23709: 'val_loss' was not in top 1
+Epoch 21, global step 24838: 'val_loss' was not in top 1
+Epoch 22, global step 25967: 'val_loss' was not in top 1
+Epoch 23, global step 27096: 'val_loss' was not in top 1
+Epoch 24, global step 28225: 'val_loss' was not in top 1
+Epoch 25, global step 29354: 'val_loss' was not in top 1
+Epoch 26, global step 30483: 'val_loss' was not in top 1
+Metric val_loss improved by 0.004 >= min_delta = 0.0. New best score: 0.414
+Epoch 27, global step 31612: 'val_loss' reached 0.41431 (best 0.41431), saving model to 'models/decoder_test/lightning_logs/version_1548801/checkpoints/best-epoch=027-val_loss=0.4143.ckpt' as top 1
+Epoch 28, global step 32741: 'val_loss' was not in top 1
+Epoch 29, global step 33870: 'val_loss' was not in top 1
+Epoch 30, global step 34999: 'val_loss' was not in top 1
+Epoch 31, global step 36128: 'val_loss' was not in top 1
+Epoch 32, global step 37257: 'val_loss' was not in top 1
+Epoch 33, global step 38386: 'val_loss' was not in top 1
+Epoch 34, global step 39515: 'val_loss' was not in top 1
+Epoch 35, global step 40644: 'val_loss' was not in top 1
+Epoch 36, global step 41773: 'val_loss' was not in top 1
+Monitored metric val_loss did not improve in the last 10 records. Best score: 0.414. Signaling Trainer to stop.
+Epoch 37, global step 42902: 'val_loss' was not in top 1
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/lightning/pytorch/trainer/connectors/data_connector.py:425: The 'test_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=7` in the `DataLoader` to improve performance.

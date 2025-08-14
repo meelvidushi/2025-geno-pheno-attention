@@ -5,18 +5,6 @@ from analysis.base import BaseModel, ModelConfig, TrainConfig
 
 
 class _Transformer(nn.Module):
-    """A vanilla transformer.
-
-    Uses pre-layer normalization.
-
-    Args:
-        d_model (int): Dimension of the embeddings and the transformer model.
-        nhead (int): Number of attention heads in the multi-head attention.
-        num_encoder_layers (int): Number of sub-encoder-layers in the encoder.
-        dim_feedforward (int): Dimension of the feedforward network model.
-        dropout (float): Dropout value.
-    """
-
     def __init__(
         self,
         embedding_dim: int = 256,
@@ -34,47 +22,60 @@ class _Transformer(nn.Module):
 
         self.num_phenotypes = num_phenotypes
         self.d_model = embedding_dim
-        self.dropout_rate = dropout_rate
         self.seq_length = seq_length
+        self.dropout_rate = dropout_rate
 
-        self.locus_embeddings = nn.Embedding(seq_length, embedding_dim)  # (L, D)
-        self.register_buffer("locus_indices", torch.arange(self.seq_length))
+        # === Input: Locus embeddings ===
+        self.pos_embed = nn.Parameter(torch.empty(seq_length, embedding_dim)
+         .normal_(mean=0.0, std=0.02))
 
+        # === Transformer encoder ===
         encoder_layer = nn.TransformerEncoderLayer(
             d_model=embedding_dim,
             nhead=nhead,
             dim_feedforward=dim_feedforward,
-            dropout=self.dropout_rate,
+            dropout=dropout_rate,
             batch_first=True,
             norm_first=True,
         )
         self.transformer_encoder = nn.TransformerEncoder(
-            encoder_layer=encoder_layer,
+            encoder_layer,
             num_layers=num_layers,
             norm=nn.LayerNorm(embedding_dim),
         )
 
-        self.fc_dropout = nn.Dropout(dropout_rate)
-
-        self.fc_out = nn.Linear(
-            embedding_dim,
-            num_phenotypes,
-            bias=True,
+        # === Learned phenotype embeddings ===
+        self.phenotype_embeddings = nn.Parameter(torch.randn(num_phenotypes, embedding_dim))
+        self.cross_attention = nn.MultiheadAttention(
+            embed_dim=embedding_dim,
+            num_heads=nhead,
+            dropout=dropout_rate,
+            batch_first=True,
         )
+        self.decoder_norm = nn.LayerNorm(embedding_dim)
+        self.output_projection = nn.Linear(embedding_dim, 1)
 
     def forward(self, genotypes: torch.Tensor) -> torch.Tensor:
-        embeddings = self.locus_embeddings(self.locus_indices)
+        B = genotypes.size(0)
+        D = self.d_model
+        L = self.seq_length
+        P = self.num_phenotypes
 
-        # (B, L, D) = (B, L, 1) * (L, D)
-        x = genotypes.unsqueeze(-1) * embeddings
+        # === Encode loci ===
+        x = genotypes.unsqueeze(-1) * self.pos_embed  # (B, L, D)
+        # === Encode genotype sequence ===
+        encoded = self.transformer_encoder(x)  # (B, L, D)
 
-        encoder_output = self.transformer_encoder(src=x)
+        # === Decode via phenotype tokens ===
+        phenotype_queries = self.phenotype_embeddings.unsqueeze(0).expand(B, -1, -1)  # (B, P, D)
+        attended, _ = self.cross_attention(
+        query=phenotype_queries, key=encoded, value=encoded)
+        # NEW ─ residual skip on decoder tokens
+        attended = self.decoder_norm(attended + phenotype_queries)  # (B, P, D)
 
-        pooled_output = encoder_output.mean(dim=1)
-        prediction = self.fc_out(self.fc_dropout(pooled_output))
+        out = self.output_projection(attended).squeeze(-1)  # (B, P)
 
-        return prediction
-
+        return out
 
 class Transformer(BaseModel):
     def __init__(self, model_config: ModelConfig, train_config: TrainConfig):

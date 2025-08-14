@@ -1,0 +1,26 @@
+Loading miniconda3/25.1.1/24g7bpu
+  Loading requirement: gcc-runtime/13.2.0/s3f7i6x
+Traceback (most recent call last):
+  File "/home/vmeel/2025-geno-pheno-attention/src/analysis/train.py", line 88, in <module>
+    run_training(config.model, config.train)
+  File "/home/vmeel/2025-geno-pheno-attention/src/analysis/train.py", line 34, in run_training
+    local_path = train_model_with_modal(model_config, train_config, blocking=True)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vmeel/2025-geno-pheno-attention/src/analysis/modal_infrastructure.py", line 218, in train_model_with_modal
+    setup_remote_directory(train_config)
+  File "/home/vmeel/2025-geno-pheno-attention/src/analysis/modal_infrastructure.py", line 154, in setup_remote_directory
+    existing_files = PREP_REMOTE_DIR_FUNCTION.remote(list(dirs_to_create))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/synchronicity/synchronizer.py", line 618, in proxy_method
+    return wrapped_method(instance, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/synchronicity/combined_types.py", line 29, in __call__
+    raise uc_exc.exc
+  File "/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/modal/_object.py", line 285, in wrapped
+    await self.hydrate()
+  File "/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/modal/_object.py", line 276, in hydrate
+    c = client if client is not None else await _Client.from_env()
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/modal/client.py", line 204, in from_env
+    raise AuthError(
+modal.exception.AuthError: Token missing. Could not authenticate client. If you have token credentials, see modal.com/docs/reference/modal.config for setup help. If you are a new user, register an account at modal.com, then run `modal token new`.

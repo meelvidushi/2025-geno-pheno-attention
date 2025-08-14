@@ -1,0 +1,15 @@
+Loading miniconda3/25.1.1/24g7bpu
+  Loading requirement: gcc-runtime/13.2.0/s3f7i6x
+[rank: 0] Seed set to 262085315
+/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/torch/nn/modules/transformer.py:286: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(f"enable_nested_tensor is True, but self.use_nested_tensor is False because {why_not_sparsity_fast_path}")
+Traceback (most recent call last):
+  File "/home/vmeel/2025-geno-pheno-attention/src/analysis/train.py", line 88, in <module>
+    run_training(config.model, config.train)
+  File "/home/vmeel/2025-geno-pheno-attention/src/analysis/train.py", line 36, in run_training
+    local_path = train_model(model_config, train_config)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vmeel/2025-geno-pheno-attention/src/analysis/train_ops.py", line 66, in train_model
+    lr_monitor = L.callbacks.LearningRateMonitor(logging_interval="step")
+                 ^^^^^^^^^^^
+AttributeError: module 'lightning' has no attribute 'callbacks'. Did you mean: 'Callback'?

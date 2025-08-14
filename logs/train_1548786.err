@@ -1,0 +1,31 @@
+Loading miniconda3/25.1.1/24g7bpu
+  Loading requirement: gcc-runtime/13.2.0/s3f7i6x
+[rank: 0] Seed set to 3432148133
+/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/lightning/fabric/plugins/environments/slurm.py:204: The `srun` command is available on your system but is not used. HINT: If your intention is to run Lightning on SLURM, prepend your python command with `srun` like so: srun python src/analysis/train.py --train.phenotypes 30C ...
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+HPU available: False, using: 0 HPUs
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+  | Name    | Type       | Params | Mode 
+-----------------------------------------------
+0 | loss_fn | MSELoss    | 0      | train
+1 | val_r2  | R2Score    | 0      | train
+2 | test_r2 | R2Score    | 0      | train
+3 | model   | _RijalEtAl | 30.6 K | train
+-----------------------------------------------
+30.6 K    Trainable params
+0         Non-trainable params
+30.6 K    Total params
+0.122     Total estimated model params size (MB)
+7         Modules in train mode
+0         Modules in eval mode
+/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/lightning/pytorch/trainer/connectors/data_connector.py:425: The 'val_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=7` in the `DataLoader` to improve performance.
+/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/lightning/pytorch/trainer/connectors/data_connector.py:425: The 'train_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=7` in the `DataLoader` to improve performance.
+Metric val_loss improved. New best score: 0.434
+Epoch 0, global step 1129: 'val_loss' reached 0.43414 (best 0.43414), saving model to 'models/20250811_212222/lightning_logs/version_1548786/checkpoints/best-epoch=000-val_loss=0.4341.ckpt' as top 1
+Metric val_loss improved by 0.007 >= min_delta = 0.0. New best score: 0.427
+Epoch 1, global step 2258: 'val_loss' reached 0.42683 (best 0.42683), saving model to 'models/20250811_212222/lightning_logs/version_1548786/checkpoints/best-epoch=001-val_loss=0.4268.ckpt' as top 1
+Metric val_loss improved by 0.003 >= min_delta = 0.0. New best score: 0.424
+Epoch 2, global step 3387: 'val_loss' reached 0.42401 (best 0.42401), saving model to 'models/20250811_212222/lightning_logs/version_1548786/checkpoints/best-epoch=002-val_loss=0.4240.ckpt' as top 1
+slurmstepd: error: *** JOB 1548786 ON gpu-3-01 CANCELLED AT 2025-08-11T21:24:46 ***

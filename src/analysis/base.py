@@ -3,6 +3,8 @@ from pathlib import Path
 
 import attrs
 import lightning as L
+import math
+
 import torch
 import torch.nn as nn
 import torchmetrics
@@ -26,6 +28,11 @@ class TrainConfig:
     optimizer: str = "adam"
     # If the validation R^2 doesn't improve in this many epochs, end training early.
     patience: int = 200
+
+    learning_rate: float = 3e-4          # replaces the old 1e-3 default
+    warmup_steps: int = 500
+    optimizer: str = "adamw"             
+
     # The batch size.
     batch_size: int = 64
     # The learning rate.
@@ -218,37 +225,46 @@ class BaseModel(L.LightningModule, ABC):
         )
 
     def configure_optimizers(self):
-        if self.train_config.optimizer == "adamw":
-            optimizer = torch.optim.AdamW(
-                self.parameters(),
-                lr=self.train_config.learning_rate,
-                weight_decay=self.train_config.weight_decay,
-            )
-        elif self.train_config.optimizer == "adam":
-            optimizer = torch.optim.Adam(
-                self.parameters(),
-                lr=self.train_config.learning_rate,
-            )
-        else:
-            raise NotImplementedError()
+        """
+        Optimizer  : AdamW (decoupled weight-decay)
+        Scheduler  : linear warm-up for `warmup_steps`, then cosine decay to 0
+                     over the full course of training (step-wise).
+        All hyper-params come from TrainConfig so you can tune from the CLI.
+        """
+        cfg = self.train_config
 
-        if not self.train_config.lr_schedule:
-            return optimizer
-
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer=optimizer,
-            mode="min",
-            factor=0.75,
-            patience=5,
-            min_lr=1e-7,
+        # --- Optimizer -------------------------------------------------------
+        opt = torch.optim.AdamW(
+            self.parameters(),
+            lr=cfg.learning_rate,
+            weight_decay=cfg.weight_decay,
         )
 
+        # --- Scheduler -------------------------------------------------------
+        if cfg.warmup_steps == 0:          # scheduler off ⇒ vanilla AdamW
+            return opt
+
+        # total number of optimisation steps Lightning will take
+        # (works even with gradient accumulation, uneven last batch, etc.)
+        total_steps: int = self.trainer.estimated_stepping_batches
+
+        # total steps must be fetched lazily (after Trainer initialises)
+        def lr_lambda(step: int) -> float:
+            ws = cfg.warmup_steps
+            if step < ws:
+                return step / max(1, ws)               # linear warm-up
+            total = self.trainer.estimated_stepping_batches
+            progress = (step - ws) / max(1, total - ws)
+            return 0.5 * (1.0 + math.cos(math.pi * progress))
+
+
+        sched = torch.optim.lr_scheduler.LambdaLR(opt, lr_lambda)
+
         return {
-            "optimizer": optimizer,
+            "optimizer": opt,
             "lr_scheduler": {
-                "scheduler": scheduler,
-                "monitor": "val_loss",
-                "interval": "epoch",
-                "strict": True,
+                "scheduler": sched,
+                "interval": "step",   # VERY important → called every optimisation step
+                "frequency": 1,
             },
         }

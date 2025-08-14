@@ -1,0 +1,18 @@
+Loading miniconda3/25.1.1/24g7bpu
+  Loading requirement: gcc-runtime/13.2.0/s3f7i6x
+[rank: 0] Seed set to 1495769264
+Traceback (most recent call last):
+  File "/home/vmeel/2025-geno-pheno-attention/src/analysis/train.py", line 88, in <module>
+    run_training(config.model, config.train)
+  File "/home/vmeel/2025-geno-pheno-attention/src/analysis/train.py", line 36, in run_training
+    local_path = train_model(model_config, train_config)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vmeel/2025-geno-pheno-attention/src/analysis/train_ops.py", line 47, in train_model
+    model = model_cls(model_config, train_config)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vmeel/2025-geno-pheno-attention/src/analysis/transformer.py", line 86, in __init__
+    self.model = _Transformer(
+                 ^^^^^^^^^^^^^
+  File "/home/vmeel/2025-geno-pheno-attention/src/analysis/transformer.py", line 21, in __init__
+    raise ValueError(f"d_model ({embedding_dim}) must be divisible by nhead ({nhead})")
+ValueError: d_model (13) must be divisible by nhead (4)

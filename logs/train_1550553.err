@@ -1,0 +1,74 @@
+Loading miniconda3/25.1.1/24g7bpu
+  Loading requirement: gcc-runtime/13.2.0/s3f7i6x
+[rank: 0] Seed set to 2360687912
+/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/torch/nn/modules/transformer.py:286: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(f"enable_nested_tensor is True, but self.use_nested_tensor is False because {why_not_sparsity_fast_path}")
+/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/lightning/fabric/plugins/environments/slurm.py:204: The `srun` command is available on your system but is not used. HINT: If your intention is to run Lightning on SLURM, prepend your python command with `srun` like so: srun python src/analysis/train.py --model.model_type transformer ...
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+HPU available: False, using: 0 HPUs
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+Loading `train_dataloader` to estimate number of stepping batches.
+/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/lightning/pytorch/trainer/connectors/data_connector.py:425: The 'train_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=7` in the `DataLoader` to improve performance.
+
+  | Name    | Type         | Params | Mode 
+-------------------------------------------------
+0 | loss_fn | MSELoss      | 0      | train
+1 | val_r2  | R2Score      | 0      | train
+2 | test_r2 | R2Score      | 0      | train
+3 | model   | _Transformer | 3.8 M  | train
+-------------------------------------------------
+3.8 M     Trainable params
+0         Non-trainable params
+3.8 M     Total params
+15.084    Total estimated model params size (MB)
+51        Modules in train mode
+0         Modules in eval mode
+/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/lightning/pytorch/trainer/connectors/data_connector.py:425: The 'val_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=7` in the `DataLoader` to improve performance.
+Metric val_r2 improved. New best score: 0.528
+Epoch 0, global step 283: 'val_r2' reached 0.52807 (best 0.52807), saving model to 'models/trans256_cosine/lightning_logs/version_1550553/checkpoints/best-epoch=000-val_loss=0.4707.ckpt' as top 1
+Epoch 1, global step 566: 'val_r2' was not in top 1
+Metric val_r2 improved by 0.022 >= min_delta = 0.0. New best score: 0.550
+Epoch 2, global step 849: 'val_r2' reached 0.54974 (best 0.54974), saving model to 'models/trans256_cosine/lightning_logs/version_1550553/checkpoints/best-epoch=002-val_loss=0.4491.ckpt' as top 1
+Metric val_r2 improved by 0.031 >= min_delta = 0.0. New best score: 0.581
+Epoch 3, global step 1132: 'val_r2' reached 0.58053 (best 0.58053), saving model to 'models/trans256_cosine/lightning_logs/version_1550553/checkpoints/best-epoch=003-val_loss=0.4184.ckpt' as top 1
+Epoch 4, global step 1415: 'val_r2' was not in top 1
+Metric val_r2 improved by 0.004 >= min_delta = 0.0. New best score: 0.585
+Epoch 5, global step 1698: 'val_r2' reached 0.58473 (best 0.58473), saving model to 'models/trans256_cosine/lightning_logs/version_1550553/checkpoints/best-epoch=005-val_loss=0.4142.ckpt' as top 1
+Metric val_r2 improved by 0.002 >= min_delta = 0.0. New best score: 0.586
+Epoch 6, global step 1981: 'val_r2' reached 0.58645 (best 0.58645), saving model to 'models/trans256_cosine/lightning_logs/version_1550553/checkpoints/best-epoch=006-val_loss=0.4125.ckpt' as top 1
+Metric val_r2 improved by 0.007 >= min_delta = 0.0. New best score: 0.594
+Epoch 7, global step 2264: 'val_r2' reached 0.59383 (best 0.59383), saving model to 'models/trans256_cosine/lightning_logs/version_1550553/checkpoints/best-epoch=007-val_loss=0.4052.ckpt' as top 1
+Epoch 8, global step 2547: 'val_r2' was not in top 1
+Metric val_r2 improved by 0.003 >= min_delta = 0.0. New best score: 0.597
+Epoch 9, global step 2830: 'val_r2' reached 0.59708 (best 0.59708), saving model to 'models/trans256_cosine/lightning_logs/version_1550553/checkpoints/best-epoch=009-val_loss=0.4019.ckpt' as top 1
+Metric val_r2 improved by 0.014 >= min_delta = 0.0. New best score: 0.611
+Epoch 10, global step 3113: 'val_r2' reached 0.61110 (best 0.61110), saving model to 'models/trans256_cosine/lightning_logs/version_1550553/checkpoints/best-epoch=010-val_loss=0.3879.ckpt' as top 1
+Epoch 11, global step 3396: 'val_r2' was not in top 1
+Metric val_r2 improved by 0.001 >= min_delta = 0.0. New best score: 0.612
+Epoch 12, global step 3679: 'val_r2' reached 0.61238 (best 0.61238), saving model to 'models/trans256_cosine/lightning_logs/version_1550553/checkpoints/best-epoch=012-val_loss=0.3866.ckpt' as top 1
+Epoch 13, global step 3962: 'val_r2' was not in top 1
+Epoch 14, global step 4245: 'val_r2' was not in top 1
+Epoch 15, global step 4528: 'val_r2' was not in top 1
+Epoch 16, global step 4811: 'val_r2' was not in top 1
+Epoch 17, global step 5094: 'val_r2' was not in top 1
+Epoch 18, global step 5377: 'val_r2' was not in top 1
+Epoch 19, global step 5660: 'val_r2' was not in top 1
+Epoch 20, global step 5943: 'val_r2' was not in top 1
+Epoch 21, global step 6226: 'val_r2' was not in top 1
+Epoch 22, global step 6509: 'val_r2' was not in top 1
+Epoch 23, global step 6792: 'val_r2' was not in top 1
+Epoch 24, global step 7075: 'val_r2' was not in top 1
+Epoch 25, global step 7358: 'val_r2' was not in top 1
+Epoch 26, global step 7641: 'val_r2' was not in top 1
+Epoch 27, global step 7924: 'val_r2' was not in top 1
+Epoch 28, global step 8207: 'val_r2' was not in top 1
+Epoch 29, global step 8490: 'val_r2' was not in top 1
+Epoch 30, global step 8773: 'val_r2' was not in top 1
+Epoch 31, global step 9056: 'val_r2' was not in top 1
+Epoch 32, global step 9339: 'val_r2' was not in top 1
+Epoch 33, global step 9622: 'val_r2' was not in top 1
+Epoch 34, global step 9905: 'val_r2' was not in top 1
+Epoch 35, global step 10188: 'val_r2' was not in top 1
+Epoch 36, global step 10471: 'val_r2' was not in top 1
+slurmstepd: error: *** JOB 1550553 ON gpu-3-01 CANCELLED AT 2025-08-12T07:09:16 DUE TO TIME LIMIT ***

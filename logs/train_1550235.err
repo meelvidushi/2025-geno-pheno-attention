@@ -1,0 +1,12 @@
+Loading miniconda3/25.1.1/24g7bpu
+  Loading requirement: gcc-runtime/13.2.0/s3f7i6x
+/home/vmeel/.conda/envs/geno-pheno-env/lib/python3.12/site-packages/modal/image.py:2093: UserWarning: Warning: caught a non-ImportError exception in an `imports()` block: IndentationError('unexpected indent', ('/home/vmeel/2025-geno-pheno-attention/src/analysis/transformer.py', 77, 8, '        out = self.output_projection(attended).squeeze(-1)  # (B, P)\n', 77, -1))
+  warnings.warn(f"Warning: caught a non-ImportError exception in an `imports()` block: {repr(exc)}")
+Traceback (most recent call last):
+  File "/home/vmeel/2025-geno-pheno-attention/src/analysis/train.py", line 12, in <module>
+    from analysis.train_ops import train_model
+  File "/home/vmeel/2025-geno-pheno-attention/src/analysis/train_ops.py", line 14, in <module>
+    from analysis.transformer import Transformer
+  File "/home/vmeel/2025-geno-pheno-attention/src/analysis/transformer.py", line 77
+    out = self.output_projection(attended).squeeze(-1)  # (B, P)
+IndentationError: unexpected indent

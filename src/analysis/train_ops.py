@@ -4,7 +4,7 @@ from pathlib import Path
 
 import lightning as L
 import pandas as pd
-from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
+from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint, LearningRateMonitor
 from torch.utils.data import DataLoader
 
 from analysis.base import ModelConfig, TrainConfig
@@ -47,19 +47,23 @@ def train_model(model_config: ModelConfig, train_config: TrainConfig) -> Path:
     model = model_cls(model_config, train_config)
 
     early_stopping = EarlyStopping(
-        monitor="val_loss",
+        monitor="val_r2",
+        mode="max",
         patience=train_config.patience,
         verbose=True,
-        mode="min",
     )
+
 
     checkpoint_callback = ModelCheckpoint(
         save_top_k=1,
-        monitor="val_loss",
-        mode="min",
+        monitor="val_r2",
+        mode="max",
+
         filename="best-{epoch:03d}-{val_loss:.4f}",
         verbose=True,
     )
+
+    lr_monitor = LearningRateMonitor(logging_interval="step")
 
     # Create a versioned subdirectory with name prefix and/or timestamp
     train_config.save_dir.mkdir(parents=True, exist_ok=True)
@@ -72,7 +76,7 @@ def train_model(model_config: ModelConfig, train_config: TrainConfig) -> Path:
         default_root_dir=experiment_dir,
         enable_checkpointing=True,
         log_every_n_steps=10,
-        callbacks=[early_stopping, checkpoint_callback],
+        callbacks=[early_stopping, checkpoint_callback, lr_monitor],
         gradient_clip_val=train_config.gradient_clip_val,
         gradient_clip_algorithm="norm",
     )
